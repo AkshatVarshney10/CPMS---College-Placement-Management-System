@@ -34,7 +34,7 @@ function PostJob() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!data?.company || !data?.jobTitle || !data?.salary || !data?.applicationDeadline || !data?.jobDescription || !data?.eligibility || !data?.howToApply) {
+    if (!data?.company || !data?.jobTitle || !data?.stipend || !data?.expectedCTC || !data?.applicationDeadline || !data?.jobDescription || !data?.howToApply) {
       setToastMessage("All Fields Required!");
       setShowToast(true);
       return;
@@ -159,13 +159,13 @@ function PostJob() {
                 <div className="my-8 text-base backdrop-blur-md bg-white/30 border border-white/20 rounded-lg shadow shadow-red-400 p-6 max-sm:text-sm max-md:p-3">
                   <div className="grid grid-cols-1 gap-2">
                     {/* company details  */}
-                    <FloatingLabel controlId="floatingSelectDifficulty" label={
+                    <FloatingLabel controlId="floatingSelectCompany" label={
                       <>
                         <span>Select Company Name <span className='text-red-500'>*</span></span>
                       </>
                     }>
                       <Form.Select
-                        aria-label="Floating label select difficulty"
+                        aria-label="Floating label select company"
                         className='cursor-pointer'
                         name='companySelected'
                         value={data?.company || ''}
@@ -191,7 +191,7 @@ function PostJob() {
                 <div className="my-8 text-base backdrop-blur-md bg-white/30 border border-white/20 rounded-lg shadow shadow-red-400 p-6 max-sm:text-sm max-md:p-3">
                   <div className="flex flex-col">
                     {/* job details  */}
-                    <div className="grid grid-cols-3 gap-2 max-md:grid-cols-1">
+                    <div className="grid grid-cols-4 gap-2 max-md:grid-cols-1">
                       <FloatingLabel controlId="floatingJobTitle" label={
                         <>
                           <span>Job Title <span className='text-red-500'>*</span></span>
@@ -207,23 +207,39 @@ function PostJob() {
                         />
                       </FloatingLabel>
 
-                      <FloatingLabel controlId="floatingSalary" label={
+                      <FloatingLabel controlId="floatingStipend" label={
                         <>
-                          <span>Salary (In LPA) <span className='text-red-500'>*</span></span>
+                          <span>Stipend (Per Month) <span className='text-red-500'>*</span></span>
                         </>
                       }>
                         <Form.Control
                           type="text"
-                          placeholder="Salary"
-                          name="salary"
-                          value={data?.salary || ''}
+                          placeholder="Stipend (e.g. 75000)"
+                          name="stipend"
+                          value={data?.stipend || ''}
                           onChange={(e) => {
-                            // Allow only numbers and decimals
+                            if (!isNaN(e.target.value)) {
+                              handleDataChange(e);
+                            }
+                          }}
+                        />
+                      </FloatingLabel>
+
+                      <FloatingLabel controlId="floatingExpectedCTC" label={
+                        <>
+                          <span>Expected CTC (In LPA) <span className='text-red-500'>*</span></span>
+                        </>
+                      }>
+                        <Form.Control
+                          type="text"
+                          placeholder="Expected CTC"
+                          name="expectedCTC"
+                          value={data?.expectedCTC || ''}
+                          onChange={(e) => {
                             if (!isNaN(e.target.value) && /^[0-9]*[.,]?[0-9]*$/.test(e.target.value)) {
                               handleDataChange(e);
                             }
                           }}
-
                         />
                       </FloatingLabel>
 
@@ -242,7 +258,132 @@ function PostJob() {
                         />
                       </FloatingLabel>
                     </div>
+                  </div>
+                </div>
 
+                {/* Eligibility Criteria Enforced Fields */}
+                <div className="my-8 text-base backdrop-blur-md bg-white/30 border border-white/20 rounded-lg shadow shadow-red-400 p-6 max-sm:text-sm max-md:p-3">
+                  <h4 className="font-semibold mb-4 text-gray-800">Job Eligibility Criteria (System Enforced)</h4>
+                  <div className="grid grid-cols-2 gap-4 max-md:grid-cols-1">
+                    
+                    {/* Minimum CGPA */}
+                    <FloatingLabel controlId="floatingMinCG" label="Minimum CGPA Requirement">
+                      <Form.Control
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="10"
+                        placeholder="e.g. 7.5"
+                        name="minCG"
+                        value={data?.minCG !== undefined ? data.minCG : ''}
+                        onChange={(e) => {
+                          setData({
+                            ...data,
+                            minCG: e.target.value === '' ? '' : parseFloat(e.target.value)
+                          });
+                        }}
+                      />
+                    </FloatingLabel>
+
+                    {/* Company Category */}
+                    <FloatingLabel controlId="floatingCompanyCategory" label="Company Category">
+                      <Form.Select
+                        name="companyCategory"
+                        value={data?.companyCategory || 'Generic'}
+                        onChange={handleDataChange}
+                      >
+                        <option value="Generic">Generic</option>
+                        <option value="Core">Core</option>
+                        <option value="Dream">Dream</option>
+                      </Form.Select>
+                    </FloatingLabel>
+
+                    {/* Placement Type */}
+                    <FloatingLabel controlId="floatingPlacementType" label="Placement Type">
+                      <Form.Select
+                        name="placementType"
+                        value={data?.placementType || 'On-Campus'}
+                        onChange={handleDataChange}
+                      >
+                        <option value="On-Campus">On-Campus</option>
+                        <option value="Off-Campus">Off-Campus</option>
+                      </Form.Select>
+                    </FloatingLabel>
+
+                    {/* Backlogs Permitted / No Backlog */}
+                    <div className="flex items-center p-3 border border-gray-200 rounded bg-white">
+                      <Form.Check
+                        type="checkbox"
+                        id="noBacklogCheckbox"
+                        label="No active backlogs allowed (Zero live KT)"
+                        name="noBacklog"
+                        checked={data?.noBacklog || false}
+                        onChange={(e) => {
+                          setData({
+                            ...data,
+                            noBacklog: e.target.checked
+                          });
+                        }}
+                      />
+                    </div>
+
+                    {/* Eligible Batches (e.g. [2027, 2028]) */}
+                    <FloatingLabel controlId="floatingEligibleBatches" label="Eligible Batches (comma separated, e.g. 2027, 2028)">
+                      <Form.Control
+                        type="text"
+                        placeholder="Eligible Batches"
+                        name="eligibleBatchesInput"
+                        value={data?.eligibleBatchesInput !== undefined ? data.eligibleBatchesInput : (data?.eligibleBatches ? data.eligibleBatches.join(', ') : '')}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const parsed = val.split(',')
+                            .map(item => parseInt(item.trim(), 10))
+                            .filter(item => !isNaN(item));
+                          setData({
+                            ...data,
+                            eligibleBatchesInput: val,
+                            eligibleBatches: parsed
+                          });
+                        }}
+                      />
+                    </FloatingLabel>
+
+                  </div>
+
+                  {/* Eligible Branches Selection */}
+                  <div className="mt-4 p-4 border border-gray-200 rounded bg-white/50">
+                    <label className="font-semibold text-gray-700 block mb-2">Eligible Branches / Departments</label>
+                    <div className="grid grid-cols-3 gap-2 max-md:grid-cols-2 max-sm:grid-cols-1">
+                      {['CSE', 'IT', 'ECE', 'CSE with DS', 'CSE with Cyber security'].map((branch) => {
+                        const isChecked = data?.eligibleBranches?.includes(branch);
+                        return (
+                          <Form.Check
+                            key={branch}
+                            type="checkbox"
+                            id={`branch-${branch}`}
+                            label={branch}
+                            checked={isChecked || false}
+                            onChange={(e) => {
+                              let updatedBranches = [...(data?.eligibleBranches || [])];
+                              if (e.target.checked) {
+                                if (!updatedBranches.includes(branch)) updatedBranches.push(branch);
+                              } else {
+                                updatedBranches = updatedBranches.filter(b => b !== branch);
+                              }
+                              setData({
+                                ...data,
+                                eligibleBranches: updatedBranches
+                              });
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="my-8 text-base backdrop-blur-md bg-white/30 border border-white/20 rounded-lg shadow shadow-red-400 p-6 max-sm:text-sm max-md:p-3">
+                  <div className="flex flex-col">
                     {/* text editor  */}
                     <div className="py-6">
                       <label className=''>
@@ -256,22 +397,6 @@ function PostJob() {
                           setData({
                             ...data,
                             jobDescription: e
-                          })
-                        }}
-                      />
-                    </div>
-                    <div className="py-6">
-                      <label className=''>
-                        Enter Eligibility <span className="text-red-500">*</span>
-                      </label>
-                      <JoditEditor
-                        ref={editor}
-                        tabIndex={2}
-                        value={data?.eligibility || ''}
-                        onChange={(e) => {
-                          setData({
-                            ...data,
-                            eligibility: e
                           })
                         }}
                       />

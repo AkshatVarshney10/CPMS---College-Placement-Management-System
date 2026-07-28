@@ -26,7 +26,10 @@ const Login = async (req, res) => {
     user.token = token;
     await user.save();
 
-    return res.json({ token });
+    return res.json({ 
+      token,
+      isPasswordChanged: user.isPasswordChanged === true 
+    });
   } catch (error) {
     console.log("student.login.controller.js => ", error);
     return res.status(500).json({ msg: "Internal Server Error!" });

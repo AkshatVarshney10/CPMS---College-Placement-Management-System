@@ -1,5 +1,4 @@
-import React from "react";
-import { FaListUl, FaCheckSquare, FaEnvelopeOpenText } from "react-icons/fa";
+import { FaListUl, FaCheckSquare, FaEnvelopeOpenText, FaChartBar } from "react-icons/fa";
 import { AiFillHome } from "react-icons/ai";
 import { RiArrowDownSFill, RiArrowUpSFill, RiPlayListAddLine } from "react-icons/ri";
 import { PiStudentDuotone } from "react-icons/pi";
@@ -24,12 +23,6 @@ export const SidebarData = [
         title: "List All",
         path: "/tpo/students",
         icon: <FaListUl />,
-        cName: "sub-nav",
-      },
-      {
-        title: "Approve",
-        path: "/tpo/approve-student",
-        icon: <FaCheckSquare />,
         cName: "sub-nav",
       },
     ],
@@ -70,6 +63,24 @@ export const SidebarData = [
         title: "Add New",
         path: "/tpo/post-job",
         icon: <RiPlayListAddLine />,
+      },
+    ],
+  },
+  {
+    title: "Placement Stats",
+    icon: <FaChartBar />,
+    iconClosed: <RiArrowDownSFill />,
+    iconOpened: <RiArrowUpSFill />,
+    subNav: [
+      {
+        title: "Overview",
+        path: "/tpo/placement-stats",
+        icon: <FaListUl />,
+      },
+      {
+        title: "Detailed Report",
+        path: "/tpo/detailed-placement-stats",
+        icon: <FaListUl />,
       },
     ],
   },

@@ -6,7 +6,6 @@ const LandingPage = lazy(() => import('./pages/LandingPage.jsx'))
 
 // Student Pages 
 const Login = lazy(() => import("./pages/students/Login.jsx"));
-const Signup = lazy(() => import("./pages/students/Signup.jsx"));
 const HomeStudent = lazy(() => import('./pages/students/Home.jsx'));
 const UpdatePlacementProfile = lazy(() => import("./components/Students/UpdatePlacementProfile.jsx"));
 const UpdateJobStatus = lazy(() => import("./components/Students/UpdateJobStatus.jsx"));
@@ -23,12 +22,16 @@ const AddCompany = lazy(() => import("./components/TPO/AddCompany.jsx"));
 const HomeManagement = lazy(() => import('./pages/Management/Home.jsx'));
 const LoginManagement = lazy(() => import("./pages/Management/Login.jsx"));
 const ListAllTPO = lazy(() => import("./components/Management/ListAllTPO.jsx"));
+const JobEligibilityReport = lazy(() => import("./components/Management/JobEligibilityReport.jsx"));
+const PlacementStats = lazy(() => import("./components/Management/PlacementStats.jsx"));
+const DetailedPlacementStats = lazy(() => import("./components/Management/DetailedPlacementStats.jsx"));
 // super user
 const LoginSuperUser = lazy(() => import("./components/SuperUser/Login.jsx"));
 const ManagementSuperUser = lazy(() => import("./components/SuperUser/AddManagement.jsx"));
 const StudentSuperUser = lazy(() => import("./components/SuperUser/AddStudent.jsx"));
 const HomeSuperUser = lazy(() => import("./components/SuperUser/Home.jsx"));
 const ApproveStudent = lazy(() => import("./components/ApproveStudent.jsx"));
+const MassStudentUpload = lazy(() => import("./components/SuperUser/MassStudentUpload.jsx"));
 
 // common users
 // for admin, tpo to edit or view user details 
@@ -121,9 +124,8 @@ function App() {
           <Routes>
             {/* Public Route  */}
             <Route index element={<LandingPage />} />
-            {/* Student Login, Sign Up  */}
+            {/* Student Login */}
             <Route path="/student/login" element={<Login />} />
-            <Route path="/student/signup" element={<Signup />} />
             {/* TPO Login  */}
             <Route path="/tpo/login" element={<LoginTPO />} />
             {/* Management Login  */}
@@ -197,9 +199,6 @@ function App() {
               <Route element={<Layout header="Students" />}>
                 <Route path="/tpo/students" element={<StudentAccYearTPO />} />
               </Route>
-              <Route element={<Layout header="Approve Student User" />}>
-                <Route path="/tpo/approve-student" element={<ApproveStudent />} />
-              </Route>
               {/* to view student data  */}
               <Route element={<Layout header="User Details" />}>
                 <Route path="/tpo/user/:userId" element={<ViewUserData />} />
@@ -244,6 +243,11 @@ function App() {
               <Route element={<Layout header="Send Notice" />}>
                 <Route path="/tpo/send-notice" element={<SendNotice />} />
               </Route>
+              {/* Placement Stats */}
+              <Route element={<Layout header="Placement Stats" />}>
+                <Route path="/tpo/placement-stats" element={<PlacementStats />} />
+                <Route path="/tpo/detailed-placement-stats" element={<DetailedPlacementStats />} />
+              </Route>
             </Route>
 
 
@@ -266,10 +270,6 @@ function App() {
               <Route element={<Layout header="Create New TPO Admin" />}>
                 <Route path="/management/add-tpo-admin" element={<AddNewUser />} />
               </Route>
-              <Route element={<Layout header="Approve Student User" />}>
-                <Route path="/management/approve-student" element={<ApproveStudent />} />
-              </Route>
-              {/* all student  */}
               <Route element={<Layout header="Students" />}>
                 <Route path="/management/students" element={<StudentAccYearTPO />} />
               </Route>
@@ -317,6 +317,15 @@ function App() {
               <Route element={<Layout header="Send Notice" />}>
                 <Route path="/management/send-notice" element={<SendNotice />} />
               </Route>
+              {/* Job eligibility report */}
+              <Route element={<Layout header="Job Eligibility & Applicants" />}>
+                <Route path="/management/job-eligibility" element={<JobEligibilityReport />} />
+              </Route>
+              {/* Placement Stats */}
+              <Route element={<Layout header="Placement Stats" />}>
+                <Route path="/management/placement-stats" element={<PlacementStats />} />
+                <Route path="/management/detailed-placement-stats" element={<DetailedPlacementStats />} />
+              </Route>
             </Route>
 
 
@@ -335,8 +344,8 @@ function App() {
               <Route element={<Layout header="Student Users" />}>
                 <Route path="/admin/student" element={<StudentSuperUser />} />
               </Route>
-              <Route element={<Layout header="Approve Student User" />}>
-                <Route path="/admin/approve-student" element={<ApproveStudent />} />
+              <Route element={<Layout header="Mass Student Upload" />}>
+                <Route path="/admin/mass-upload" element={<MassStudentUpload />} />
               </Route>
               <Route element={<Layout header="Users" />}>
                 <Route path="/admin/user/:userId" element={<UserDetails />} />
@@ -381,7 +390,15 @@ function App() {
               <Route element={<Layout header="Edit Job Detail" />}>
                 <Route path="/admin/post-job/:jobId" element={<PostJobTPO />} />
               </Route>
-
+              {/* Job eligibility report */}
+              <Route element={<Layout header="Job Eligibility & Applicants" />}>
+                <Route path="/admin/job-eligibility" element={<JobEligibilityReport />} />
+              </Route>
+              {/* Placement Stats */}
+              <Route element={<Layout header="Placement Stats" />}>
+                <Route path="/admin/placement-stats" element={<PlacementStats />} />
+                <Route path="/admin/detailed-placement-stats" element={<DetailedPlacementStats />} />
+              </Route>
             </Route>
 
             {/* 404 page not found route */}

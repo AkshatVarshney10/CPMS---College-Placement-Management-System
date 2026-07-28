@@ -42,8 +42,11 @@ const UpdateProfile = async (req, res) => {
       if (req.body.studentProfile.department) user.studentProfile.department = req.body.studentProfile.department;
       if (req.body.studentProfile.year) user.studentProfile.year = req.body.studentProfile.year;
       if (req.body.studentProfile.addmissionYear) user.studentProfile.addmissionYear = req.body.studentProfile.addmissionYear;
+      if (req.body.studentProfile.graduationYear) user.studentProfile.graduationYear = req.body.studentProfile.graduationYear;
+      if (req.body.studentProfile.cgpa !== undefined) user.studentProfile.cgpa = req.body.studentProfile.cgpa;
+      if (req.body.studentProfile.hasNOC !== undefined) user.studentProfile.hasNOC = req.body.studentProfile.hasNOC;
       if (req.body.studentProfile.gap !== undefined) user.studentProfile.gap = req.body.studentProfile.gap;
-      if (req.body.studentProfile.liveKT) user.studentProfile.liveKT = req.body.studentProfile.liveKT;
+      if (req.body.studentProfile.liveKT !== undefined) user.studentProfile.liveKT = req.body.studentProfile.liveKT;
 
       if (req.body.studentProfile.SGPA) {
         if (req.body.studentProfile.SGPA.sem1 && req.body.studentProfile.SGPA.sem1 !== "undefined") user.studentProfile.SGPA.sem1 = req.body.studentProfile.SGPA.sem1;

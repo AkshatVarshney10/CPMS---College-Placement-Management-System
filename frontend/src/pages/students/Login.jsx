@@ -128,12 +128,7 @@ function Login() {
               {isLoading ? 'Loading...' : 'Log In'}
             </Button>
           </div>
-          <span className='text-center'>Don't have an account?
-            <span className='text-[#603406] font-bold cursor-pointer px-1' onClick={() => navigate('../student/signup')}>
-              Create new account
-            </span>
-          </span>
-          <p className="text-muted text-center text-gray-400">© College Placement Management System 2026 - 27</p>
+          <p className="text-muted text-center text-gray-400 mt-2">© College Placement Management System 2026 - 27</p>
         </form>
       </div>
     </>

@@ -3,11 +3,7 @@ const CompanySchema = require("../../models/company.model");
 
 const AddCompany = async (req, res) => {
   try {
-    const companyName = req.body.companyName;
-    const companyDescription = req.body.companyDescription;
-    const companyWebsite = req.body.companyWebsite;
-    const companyLocation = req.body.companyLocation;
-    const companyDifficulty = req.body.companyDifficulty;
+    const { companyName, companyDescription, companyWebsite, companyLocation, category, hrName, hrPhone, hrEmail, hrLinkedin } = req.body;
 
     if (await CompanySchema.findOne({ companyName: companyName })) {
       return res.status(400).json({ msg: "Company Name Already Exist!" })
@@ -18,7 +14,11 @@ const AddCompany = async (req, res) => {
       companyDescription,
       companyWebsite,
       companyLocation,
-      companyDifficulty
+      category, // save company category
+      hrName,
+      hrPhone,
+      hrEmail,
+      hrLinkedin
     });
 
     await newcmp.save();
@@ -35,7 +35,7 @@ const UpdateCompany = async (req, res) => {
     const companyId = req.query.companyId;
     if (!companyId) return res.status(404).json({ msg: "Company Not Found!" });
 
-    const { companyName, companyDescription, companyWebsite, companyLocation, companyDifficulty } = req.body;
+    const { companyName, companyDescription, companyWebsite, companyLocation, category, hrName, hrPhone, hrEmail, hrLinkedin } = req.body;
 
     const company = await CompanySchema.findById(companyId);
 
@@ -44,7 +44,11 @@ const UpdateCompany = async (req, res) => {
     company.companyDescription = companyDescription || company.companyDescription;
     company.companyWebsite = companyWebsite || company.companyWebsite;
     company.companyLocation = companyLocation || company.companyLocation;
-    company.companyDifficulty = companyDifficulty || company.companyDifficulty;
+    company.category = category || company.category; // update category
+    company.hrName = hrName !== undefined ? hrName : company.hrName;
+    company.hrPhone = hrPhone !== undefined ? hrPhone : company.hrPhone;
+    company.hrEmail = hrEmail !== undefined ? hrEmail : company.hrEmail;
+    company.hrLinkedin = hrLinkedin !== undefined ? hrLinkedin : company.hrLinkedin;
 
     await company.save();
 

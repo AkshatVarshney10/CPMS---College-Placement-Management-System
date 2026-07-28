@@ -175,13 +175,14 @@ function AllCompany() {
               >
                 <thead>
                   <tr>
-                    <th style={{ width: '7%' }}>Sr. No.</th>
-                    <th style={{ width: '18%' }}><b>Company Name</b></th>
-                    <th style={{ width: '15%' }}>Company Website</th>
-                    <th style={{ width: '15%' }}>Company Location</th>
-                    <th style={{ width: '17%' }}>Company Difficulty Level</th>
-                    <th style={{ width: '13%' }}>No. of Jobs Posted</th>
-                    <th style={{ width: '15%' }}>Action</th>
+                    <th style={{ width: '5%' }}>Sr. No.</th>
+                    <th style={{ width: '15%' }}><b>Company Name</b></th>
+                    <th style={{ width: '12%' }}>Company Website</th>
+                    <th style={{ width: '12%' }}>Company Location</th>
+                    <th style={{ width: '12%' }}>Company Category</th>
+                    <th style={{ width: '22%' }}>HR Contact</th>
+                    <th style={{ width: '10%' }}>No. of Jobs Posted</th>
+                    <th style={{ width: '12%' }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -208,14 +209,26 @@ function AllCompany() {
                           {company?.companyLocation}
                         </td>
                         <td>
-                          {company?.companyDifficulty === "Easy" && (
-                            <span className='bg-green-500 text-white px-2 py-1 rounded'>{company?.companyDifficulty}</span>
+                          {company?.category === "Generic" && (
+                            <span className='bg-green-500 text-white px-2 py-1 rounded'>{company?.category}</span>
                           )}
-                          {company?.companyDifficulty === "Moderate" && (
-                            <span className='bg-orange-500 text-white px-2 py-1 rounded'>{company?.companyDifficulty}</span>
+                          {company?.category === "Core" && (
+                            <span className='bg-orange-500 text-white px-2 py-1 rounded'>{company?.category}</span>
                           )}
-                          {company?.companyDifficulty === "Hard" && (
-                            <span className='bg-red-500 text-white px-2 py-1 rounded'>{company?.companyDifficulty}</span>
+                          {company?.category === "Dream" && (
+                            <span className='bg-red-500 text-white px-2 py-1 rounded'>{company?.category}</span>
+                          )}
+                        </td>
+                        <td>
+                          {company?.hrName ? (
+                            <div className="text-xs flex flex-col gap-0.5">
+                              <div><strong>Name:</strong> {company.hrName}</div>
+                              <div><strong>Phone:</strong> {company.hrPhone}</div>
+                              <div><strong>Email:</strong> <a href={`mailto:${company.hrEmail}`} className="text-blue-500 hover:underline">{company.hrEmail}</a></div>
+                              <div><strong>LinkedIn:</strong> <a href={company.hrLinkedin} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline">Profile</a></div>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">N/A</span>
                           )}
                         </td>
                         <td>

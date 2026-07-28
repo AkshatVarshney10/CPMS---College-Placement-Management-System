@@ -3,30 +3,11 @@ const bcrypt = require('bcrypt');
 
 
 const Signup = async (req, res) => {
-  const { first_name, email, number, password } = req.body;
-
-  try {
-    if (await User.findOne({ email }))
-      return res.status(400).json({ msg: "User Already Exists!" });
-
-    const hashPassword = await bcrypt.hash(password, 10);
-
-    const newUser = new User({
-      first_name: first_name,
-      email: email,
-      number: number,
-      password: hashPassword,
-      role: "student",
-      studentProfile: {
-        isApproved: false
-      }
-    });
-    await newUser.save();
-    return res.json({ msg: "User Created!" });
-  } catch (error) {
-    console.log("student.signup.controller.js => ", error);
-    return res.status(500).json({ msg: "Internal Server Error!" });
-  }
+  // Disabling student self-signup as per college placement policy requirements.
+  // Student accounts are pre-created by the Superadmin and sent via mass mail.
+  return res.status(403).json({
+    msg: "Registration via signup is disabled. Your account must be pre-created by the Placement Cell. Please use the login credentials sent to your registered email."
+  });
 }
 
 module.exports = Signup;

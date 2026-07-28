@@ -5,7 +5,7 @@ import { GrUserManager, GrUserWorker } from "react-icons/gr";
 import { FaListUl } from "react-icons/fa";
 import { RiArrowDownSFill, RiArrowUpSFill, RiPlayListAddLine } from "react-icons/ri";
 import { PiStudentDuotone } from "react-icons/pi";
-import { FaClipboardCheck, FaIndustry, FaEnvelopeOpenText } from "react-icons/fa";
+import { FaClipboardCheck, FaIndustry, FaEnvelopeOpenText, FaChartBar } from "react-icons/fa";
 import { LiaIndustrySolid } from "react-icons/lia";
 import { FaUserSecret } from "react-icons/fa";
 
@@ -68,9 +68,9 @@ export const SidebarData = [
         cName: "sub-nav",
       },
       {
-        title: "Approve",
-        path: "/admin/approve-student",
-        icon: <FaClipboardCheck />,
+        title: "Mass Upload",
+        path: "/admin/mass-upload",
+        icon: <RiPlayListAddLine />,
         cName: "sub-nav",
       },
       {
@@ -117,6 +117,29 @@ export const SidebarData = [
         title: "Add New",
         path: "/admin/post-job",
         icon: <RiPlayListAddLine />,
+      },
+    ],
+  },
+  {
+    title: "Eligibility & Applicants",
+    path: "/admin/job-eligibility",
+    icon: <FaClipboardCheck />
+  },
+  {
+    title: "Placement Stats",
+    icon: <FaChartBar />,
+    iconClosed: <RiArrowDownSFill />,
+    iconOpened: <RiArrowUpSFill />,
+    subNav: [
+      {
+        title: "Overview",
+        path: "/admin/placement-stats",
+        icon: <FaListUl />,
+      },
+      {
+        title: "Detailed Report",
+        path: "/admin/detailed-placement-stats",
+        icon: <FaListUl />,
       },
     ],
   },

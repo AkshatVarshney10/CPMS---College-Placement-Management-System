@@ -427,6 +427,28 @@ function ViewUserData() {
                                 </span>
                               </div>
                             )}
+                            {userData?.studentProfile?.graduationYear && (
+                              <div>
+                                <span className="font-bold text-gray-700 ">Graduation Year: </span>
+                                <span className="text-gray-800">
+                                  {userData?.studentProfile?.graduationYear}
+                                </span>
+                              </div>
+                            )}
+                            {userData?.studentProfile?.cgpa !== undefined && (
+                              <div>
+                                <span className="font-bold text-gray-700 ">CGPA: </span>
+                                <span className="text-green-600 font-bold">
+                                  {userData?.studentProfile?.cgpa}
+                                </span>
+                              </div>
+                            )}
+                            <div>
+                              <span className="font-bold text-gray-700 ">Has Taken NOC: </span>
+                              <span className={userData?.studentProfile?.hasNOC ? "text-red-500 font-bold" : "text-gray-800"}>
+                                {userData?.studentProfile?.hasNOC ? "Yes" : "No"}
+                              </span>
+                            </div>
                             <div>
                               <span className="font-bold text-gray-700 ">Live KT's: </span>
                               <span className="text-gray-800">

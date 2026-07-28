@@ -1,0 +1,1 @@
+var e=`/assets/CPMS-DvoK09sP.png`;export{e as t};

@@ -12,7 +12,7 @@ const { managementUsers, managementAddUsers, managementDeleteUsers } = require('
 // tpo methods
 const { tpoUsers, tpoAddUsers, tpoDeleteUsers } = require('../controllers/SuperUser/user-tpo.controller.js');
 // student methods
-const { studentUsers, studentAddUsers, studentDeleteUsers, studentApprove } = require('../controllers/SuperUser/user-student.controller.js');
+const { studentUsers, studentAddUsers, studentDeleteUsers, studentApprove, sendMassLoginEmails, studentMassUpload, getMassUploadHistory } = require('../controllers/SuperUser/user-student.controller.js');
 
 
 
@@ -34,6 +34,23 @@ router.post('/student-add-user', authenticateToken, studentAddUsers);
 router.post('/student-delete-user', authenticateToken, studentDeleteUsers);
 // approve student
 router.post('/student-approve', authenticateToken, studentApprove);
+// send mass login credentials mail to students
+router.post('/student-send-mass-mail', authenticateToken, sendMassLoginEmails);
+// mass upload and send mail
+router.post('/student-mass-upload', authenticateToken, studentMassUpload);
+// mass upload history
+router.get('/student-mass-upload-history', authenticateToken, getMassUploadHistory);
 
+// Job eligibility report endpoint
+const { GetJobEligibilityReport } = require('../controllers/Management/job-eligibility.controller');
+router.get('/job-eligibility-report', authenticateToken, GetJobEligibilityReport);
+
+// Placement statistics endpoint
+const { GetPlacementStats } = require('../controllers/Management/placement-stats.controller');
+router.get('/placement-stats', authenticateToken, GetPlacementStats);
+
+// Detailed placement statistics endpoint
+const { GetDetailedPlacementStats } = require('../controllers/Management/detailed-placement-stats.controller');
+router.get('/detailed-placement-stats', authenticateToken, GetDetailedPlacementStats);
 
 module.exports = router;

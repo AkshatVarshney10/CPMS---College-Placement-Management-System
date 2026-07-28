@@ -97,6 +97,43 @@ function UserDetails() {
 
   // console.log(userData)
 
+  const calcCGPA = () => {
+    let sum = 0, sem = 0;
+    if (userData?.studentProfile?.SGPA?.sem1 && userData?.studentProfile?.SGPA?.sem1 !== 0 && userData?.studentProfile?.SGPA?.sem1 !== '0') {
+      sum += Number(userData.studentProfile.SGPA.sem1);
+      sem += 1;
+    }
+    if (userData?.studentProfile?.SGPA?.sem2 && userData?.studentProfile?.SGPA?.sem2 !== 0 && userData?.studentProfile?.SGPA?.sem2 !== '0') {
+      sum += Number(userData.studentProfile.SGPA.sem2);
+      sem += 1;
+    }
+    if (userData?.studentProfile?.SGPA?.sem3 && userData?.studentProfile?.SGPA?.sem3 !== 0 && userData?.studentProfile?.SGPA?.sem3 !== '0') {
+      sum += Number(userData.studentProfile.SGPA.sem3);
+      sem += 1;
+    }
+    if (userData?.studentProfile?.SGPA?.sem4 && userData?.studentProfile?.SGPA?.sem4 !== 0 && userData?.studentProfile?.SGPA?.sem4 !== '0') {
+      sum += Number(userData.studentProfile.SGPA.sem4);
+      sem += 1;
+    }
+    if (userData?.studentProfile?.SGPA?.sem5 && userData?.studentProfile?.SGPA?.sem5 !== 0 && userData?.studentProfile?.SGPA?.sem5 !== '0') {
+      sum += Number(userData.studentProfile.SGPA.sem5);
+      sem += 1;
+    }
+    if (userData?.studentProfile?.SGPA?.sem6 && userData?.studentProfile?.SGPA?.sem6 !== 0 && userData?.studentProfile?.SGPA?.sem6 !== '0') {
+      sum += Number(userData.studentProfile.SGPA.sem6);
+      sem += 1;
+    }
+    if (userData?.studentProfile?.SGPA?.sem7 && userData?.studentProfile?.SGPA?.sem7 !== 0 && userData?.studentProfile?.SGPA?.sem7 !== '0') {
+      sum += Number(userData.studentProfile.SGPA.sem7);
+      sem += 1;
+    }
+    if (userData?.studentProfile?.SGPA?.sem8 && userData?.studentProfile?.SGPA?.sem8 !== 0 && userData?.studentProfile?.SGPA?.sem8 !== '0') {
+      sum += Number(userData.studentProfile.SGPA.sem8);
+      sem += 1;
+    }
+    return sem > 0 ? (sum / sem).toFixed(2) : 0;
+  }
+
   const handleDataChangeForSGPA = (e) => {
     setUserData({
       ...userData,
@@ -116,9 +153,12 @@ function UserDetails() {
 
     try {
       const token = localStorage.getItem('token');
+      const updatedUserData = { ...userData };
+      if (updatedUserData.role === 'student' && updatedUserData.studentProfile) {
+        updatedUserData.studentProfile.cgpa = parseFloat(calcCGPA()) || 0;
+      }
       const response = await axios.post(`${BASE_URL}/user/update-profile`,
-        // for sending to backend is user is completing profile
-        userData,
+        updatedUserData,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -422,6 +462,49 @@ function UserDetails() {
                               disabled={!completeProfileReq && currentUserData.role !== 'superuser'}
                             />
                           </FloatingLabel>
+                          <FloatingLabel controlId="floatingGraduationYear" label="Graduation Year">
+                            <Form.Select
+                              aria-label="Floating label select graduation year"
+                              className='cursor-pointer'
+                              name='graduationYear'
+                              value={userData?.studentProfile?.graduationYear || "undefined"}
+                              onChange={(e) => {
+                                setUserData({
+                                  ...userData,
+                                  studentProfile: {
+                                    ...userData?.studentProfile,
+                                    graduationYear: parseInt(e.target.value) || undefined
+                                  }
+                                });
+                              }}
+                              required={completeProfileReq}
+                              disabled={!completeProfileReq && currentUserData.role !== 'superuser'}
+                            >
+                              <option disabled value="undefined" className='text-gray-400'>Enter Graduation Year</option>
+                              <option value="2027">2027</option>
+                              <option value="2028">2028</option>
+                              <option value="2029">2029</option>
+                              <option value="2030">2030</option>
+                            </Form.Select>
+                          </FloatingLabel>
+                          <Form.Check
+                            type="switch"
+                            id="hasNOC"
+                            checked={userData?.studentProfile?.hasNOC === "true" || userData?.studentProfile?.hasNOC === true}
+                            onChange={(e) => {
+                              setUserData({
+                                ...userData,
+                                studentProfile: {
+                                  ...userData?.studentProfile,
+                                  hasNOC: e.target.checked
+                                }
+                              });
+                            }}
+                            name='hasNOC'
+                            label="Has taken NOC"
+                            disabled={!completeProfileReq && currentUserData.role !== 'superuser'}
+                            className="mt-2 text-red-600 font-semibold"
+                          />
                         </div>
 
                         <div className="px-2 py-3 flex flex-col gap-3">
@@ -596,6 +679,12 @@ function UserDetails() {
                                 disabled={!completeProfileReq && currentUserData.role !== 'superuser'}
                               />
                             </FloatingLabel>
+                          </div>
+                          <div className="col-span-2 mt-2">
+                            <div className="text-2xl text-green-500 font-bold">
+                              <span>CGPA: </span>
+                              <span>{calcCGPA()}</span>
+                            </div>
                           </div>
                         </div>
                       </div>

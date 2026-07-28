@@ -8,8 +8,6 @@ const upload = require('../config/Multer.js');
 
 const authenticateToken = require('../middleware/auth.middleware');
 
-// student sign controller
-const Signup = require('../controllers/Student/signup.controller.js');
 // student login controller
 const Login = require('../controllers/Student/login.controller.js');
 
@@ -23,9 +21,6 @@ const { UpdateJobStatus } = require('../controllers/Student/update-job-status.co
 const { GetInternships, UpdateInternship, DeleteInternship } = require('../controllers/Student/internship.controller.js');
 
 const { StudentDataYearBranchWise, NotifyStudentStatus } = require('../controllers/Student/student-data-for-admin.controller.js');
-
-// signup post request for student
-router.post('/signup', Signup);
 
 // login post request for student
 router.post('/login', Login);

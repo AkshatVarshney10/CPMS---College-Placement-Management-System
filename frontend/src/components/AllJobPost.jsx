@@ -158,7 +158,8 @@ function AllJobPost() {
                       <th>Sr. No.</th>
                       <th><b>Company Name</b></th>
                       <th>Job Title</th>
-                      <th>Annual CTC</th>
+                      <th>Stipend</th>
+                      <th>Expected CTC</th>
                       <th>Last date of Application</th>
                       <th>No. of Students Applied</th>
                       <th>Action</th>
@@ -182,7 +183,8 @@ function AllJobPost() {
                               </b>
                             </td>
                             <td>{job?.jobTitle}</td>
-                            <td>{job?.salary}</td>
+                            <td>{job?.stipend ? `₹${job.stipend.toLocaleString('en-IN')} / month` : 'N/A'}</td>
+                            <td>{job?.expectedCTC ? `${job.expectedCTC} LPA` : (job?.salary ? `${job.salary} LPA` : 'N/A')}</td>
                             <td>{new Date(job?.applicationDeadline).toLocaleDateString('en-In')}</td>
                             <td>{job?.applicants?.length}</td>
                             <td>

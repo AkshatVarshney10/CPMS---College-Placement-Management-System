@@ -32,7 +32,7 @@ function AddCompany() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!data?.companyName || !data?.companyDescription || !data?.companyDifficulty || !data?.companyLocation || !data?.companyWebsite)
+    if (!data?.companyName || !data?.companyDescription || !data?.category || !data?.companyLocation || !data?.companyWebsite || !data?.hrName || !data?.hrPhone || !data?.hrEmail || !data?.hrLinkedin)
       return setError("All Fields Required!");
     setShowModal(true);
   }
@@ -156,23 +156,23 @@ function AddCompany() {
 
                     />
                   </FloatingLabel>
-                  <FloatingLabel controlId="floatingSelectDifficulty" label={
+                  <FloatingLabel controlId="floatingSelectCategory" label={
                     <>
-                      <span>Difficulty Level <span className='text-red-500'>*</span></span>
+                      <span>Company Category <span className='text-red-500'>*</span></span>
                     </>
                   }>
                     <Form.Select
-                      aria-label="Floating label select difficulty"
+                      aria-label="Floating label select category"
                       className='cursor-pointer'
-                      name='companyDifficulty'
-                      value={data?.companyDifficulty || ''}
+                      name='category'
+                      value={data?.category || ''}
                       onChange={handleDataChange}
 
                     >
-                      <option disabled value='' className='text-gray-400'>Enter Difficulty Level</option>
-                      <option value="Easy">Easy</option>
-                      <option value="Moderate">Moderate</option>
-                      <option value="Hard">Hard</option>
+                      <option disabled value='' className='text-gray-400'>Enter Company Category</option>
+                      <option value="Generic">Generic</option>
+                      <option value="Core">Core</option>
+                      <option value="Dream">Dream</option>
                     </Form.Select>
                   </FloatingLabel>
                   <FloatingLabel controlId="floatingcompanyDescription" label={
@@ -190,6 +190,64 @@ function AddCompany() {
 
                     />
                   </FloatingLabel>
+
+                  <div className="mt-4 border-t pt-4">
+                    <h5 className="text-lg font-semibold text-gray-800 mb-3">HR Contact Details</h5>
+                    <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1">
+                      <FloatingLabel controlId="floatingHrName" label={
+                        <>
+                          <span>HR Name <span className='text-red-500'>*</span></span>
+                        </>
+                      }>
+                        <Form.Control
+                          type="text"
+                          placeholder="HR Name"
+                          name='hrName'
+                          value={data?.hrName || ''}
+                          onChange={handleDataChange}
+                        />
+                      </FloatingLabel>
+                      <FloatingLabel controlId="floatingHrPhone" label={
+                        <>
+                          <span>HR Phone <span className='text-red-500'>*</span></span>
+                        </>
+                      }>
+                        <Form.Control
+                          type="text"
+                          placeholder="HR Phone"
+                          name='hrPhone'
+                          value={data?.hrPhone || ''}
+                          onChange={handleDataChange}
+                        />
+                      </FloatingLabel>
+                      <FloatingLabel controlId="floatingHrEmail" label={
+                        <>
+                          <span>HR Email <span className='text-red-500'>*</span></span>
+                        </>
+                      }>
+                        <Form.Control
+                          type="email"
+                          placeholder="HR Email"
+                          name='hrEmail'
+                          value={data?.hrEmail || ''}
+                          onChange={handleDataChange}
+                        />
+                      </FloatingLabel>
+                      <FloatingLabel controlId="floatingHrLinkedin" label={
+                        <>
+                          <span>HR LinkedIn <span className='text-red-500'>*</span></span>
+                        </>
+                      }>
+                        <Form.Control
+                          type="url"
+                          placeholder="HR LinkedIn Profile Link"
+                          name='hrLinkedin'
+                          value={data?.hrLinkedin || ''}
+                          onChange={handleDataChange}
+                        />
+                      </FloatingLabel>
+                    </div>
+                  </div>
                 </div>
                 {
                   error &&

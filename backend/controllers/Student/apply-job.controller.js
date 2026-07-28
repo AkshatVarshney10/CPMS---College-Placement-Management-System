@@ -10,9 +10,29 @@ const AppliedToJob = async (req, res) => {
     if (req.params.jobId === "undefined") return;
 
     const user = await User.findById(req.params.studentId);
-    const job = await jobSchema.findById(req.params.jobId);
+    const job = await jobSchema.findById(req.params.jobId).populate('company');
 
-    // retune if already applied
+    if (!user) return res.status(404).json({ msg: "Student not found!" });
+    if (!job) return res.status(404).json({ msg: "Job not found!" });
+
+    // Check student eligibility before applying
+    const { checkStudentEligibility } = require("../../utlis/placement");
+    const hiredJobs = await jobSchema.find({
+      "applicants": {
+        $elemMatch: {
+          studentId: user._id,
+          status: "hired"
+        }
+      }
+    }).populate("company");
+    const hiredCategories = hiredJobs.map(j => j.company && j.company.category).filter(Boolean);
+
+    const check = checkStudentEligibility(user, job, hiredCategories);
+    if (!check.eligible) {
+      return res.status(400).json({ msg: check.reason || "You are not eligible to apply for this job." });
+    }
+
+    // return if already applied
     if (user?.studentProfile?.appliedJobs?.some(job => job.jobId == req.params.jobId)) return res.json({ msg: "Already Applied!" });
 
     if (!user?.studentProfile?.resume) return res.json({ msg: 'Please Upload Resume First, Under "Placements" > "Placement Profile"' });

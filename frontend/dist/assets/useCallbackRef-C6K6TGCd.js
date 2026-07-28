@@ -1,0 +1,1 @@
+import{a as e,n as t}from"./jsx-runtime-Bg_NI1en.js";var n=e(t());function r(){return(0,n.useState)(null)}export{r as t};

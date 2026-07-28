@@ -235,28 +235,52 @@ function ViewJobPost() {
                               ))}
                             </div>
                           </div>
-                          <div className="flex justify-between p-2 border-b-2 my-2">
-                            {/* company difficulty  */}
-                            <span>Difficulty Level</span>
+                           <div className="flex justify-between p-2 border-b-2 my-2">
+                            {/* company category */}
+                            <span>Company Category</span>
                             {
-                              company?.companyDifficulty === "Easy" &&
+                              company?.category === "Generic" &&
                               <span className='bg-green-500 py-1 px-2 text-white rounded'>
-                                {company?.companyDifficulty}
+                                {company?.category}
                               </span>
                             }
                             {
-                              company?.companyDifficulty === "Moderate" &&
+                              company?.category === "Core" &&
                               <span className='bg-orange-500 py-1 px-2 text-white rounded'>
-                                {company?.companyDifficulty}
+                                {company?.category}
                               </span>
                             }
                             {
-                              company?.companyDifficulty === "Hard" &&
+                              company?.category === "Dream" &&
                               <span className='bg-red-500 py-1 px-2 text-white rounded'>
-                                {company?.companyDifficulty}
+                                {company?.category}
                               </span>
                             }
                           </div>
+                          {company?.hrName && (
+                            <>
+                              <div className="flex justify-between p-2 border-b-2 my-2">
+                                <span>HR Name</span>
+                                <span className="font-semibold text-gray-700">{company.hrName}</span>
+                              </div>
+                              <div className="flex justify-between p-2 border-b-2 my-2">
+                                <span>HR Phone</span>
+                                <span className="font-semibold text-gray-700">{company.hrPhone}</span>
+                              </div>
+                              <div className="flex justify-between p-2 border-b-2 my-2">
+                                <span>HR Email</span>
+                                <span className="text-blue-500">
+                                  <a href={`mailto:${company.hrEmail}`} className="no-underline text-blue-500 hover:underline">{company.hrEmail}</a>
+                                </span>
+                              </div>
+                              <div className="flex justify-between p-2 border-b-2 my-2">
+                                <span>HR LinkedIn</span>
+                                <span className="text-blue-500">
+                                  <a href={company.hrLinkedin} target="_blank" rel="noreferrer" className="no-underline text-blue-500 hover:underline">View Profile</a>
+                                </span>
+                              </div>
+                            </>
+                          )}
                         </div>
                       </Accordion.Body>
                     </Accordion.Item>
@@ -368,17 +392,39 @@ function ViewJobPost() {
                         {/* job eligibility  */}
                         <div className="flex flex-col backdrop-blur-md bg-white/30 border border-white/20 rounded-lg px-2 shadow-sm shadow-red-400">
                           <span className='text-xl text-blue-500 py-2 border-b-2'>
-                            Eligibility
+                            Eligibility Criteria
                           </span>
-                          <span className='py-3' dangerouslySetInnerHTML={{ __html: data?.eligibility }} />
+                          {data?.eligibility && (
+                            <div className="py-2 border-b border-gray-200/50" dangerouslySetInnerHTML={{ __html: data.eligibility }} />
+                          )}
+                          {/* System Enforced Eligibility Details */}
+                          <div className="pt-2 pb-3 text-sm text-gray-700">
+                            <span className="font-semibold block mb-1 text-gray-800">System Enforced Criteria:</span>
+                            <ul className="list-disc pl-5 flex flex-col gap-1">
+                              <li>Minimum CGPA: <strong className="text-gray-900">{data?.minCG !== undefined ? data.minCG : '0'}</strong></li>
+                              <li>Backlogs: <strong className="text-gray-900">{data?.noBacklog ? 'No active backlogs allowed' : 'Backlogs permitted'}</strong></li>
+                              {data?.companyCategory && <li>Drive Category: <strong className="text-gray-900">{data.companyCategory}</strong></li>}
+                              {data?.eligibleBatches?.length > 0 && <li>Eligible Batches: <strong className="text-gray-900">{data.eligibleBatches.join(', ')}</strong></li>}
+                              {data?.eligibleBranches?.length > 0 && <li>Eligible Branches: <strong className="text-gray-900">{data.eligibleBranches.join(', ')}</strong></li>}
+                            </ul>
+                          </div>
                         </div>
-                        {/* job salary  */}
+                        {/* job stipend */}
                         <div className="flex flex-col backdrop-blur-md bg-white/30 border border-white/20 rounded-lg px-2 shadow-sm shadow-red-400">
                           <span className='text-xl text-blue-500 py-2 border-b-2'>
-                            Annual CTC
+                            Stipend
                           </span>
                           <span className='py-3'>
-                            {data?.salary} LPA
+                            {data?.stipend ? `₹${data.stipend.toLocaleString('en-IN')} / month` : 'N/A'}
+                          </span>
+                        </div>
+                        {/* job expected ctc */}
+                        <div className="flex flex-col backdrop-blur-md bg-white/30 border border-white/20 rounded-lg px-2 shadow-sm shadow-red-400">
+                          <span className='text-xl text-blue-500 py-2 border-b-2'>
+                            Expected CTC
+                          </span>
+                          <span className='py-3'>
+                            {data?.expectedCTC ? `${data.expectedCTC} LPA` : (data?.salary ? `${data.salary} LPA` : 'N/A')}
                           </span>
                         </div>
                         {/* job deadline  */}

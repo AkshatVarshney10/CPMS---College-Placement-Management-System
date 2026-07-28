@@ -70,22 +70,27 @@ function UpdatePlacementProfile() {
     try {
       const token = localStorage.getItem('token');
 
+      const updatedUserData = {
+        ...userData,
+        studentProfile: {
+          ...userData?.studentProfile,
+          cgpa: parseFloat(cgpa) || 0
+        }
+      };
+
       const response = await axios.post(`${BASE_URL}/user/update-profile`,
-        // for sending to backend is user is completing profile
-        userData,
+        updatedUserData,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
           }
         }
       );
-      // console.log(response.data);
       if (response.data) {
         if (response.data.msg) {
           setToastMessage(response.data.msg);
           setShowToast(true);
         }
-        //   navigate("../student/dashboard");
       }
     } catch (error) {
       console.log("UserDetails => ", error);
@@ -311,6 +316,7 @@ function UpdatePlacementProfile() {
                       </div>
 
                       {/* current year, live kt and any gap  */}
+                      {/* current year, graduation year, live kt, gap, NOC */}
                       <div className="px-2 py-3 flex flex-col gap-3">
                         <FloatingLabel controlId="floatingSelectYear" label="Current Year">
                           <Form.Select
@@ -323,7 +329,7 @@ function UpdatePlacementProfile() {
                                 ...userData,
                                 studentProfile: {
                                   ...userData?.studentProfile,
-                                  year: e.target.value
+                                  year: parseInt(e.target.value) || undefined
                                 }
                               });
                             }}
@@ -333,6 +339,29 @@ function UpdatePlacementProfile() {
                             <option value="2">2nd</option>
                             <option value="3">3rd</option>
                             <option value="4">4th</option>
+                          </Form.Select>
+                        </FloatingLabel>
+                        <FloatingLabel controlId="floatingGraduationYear" label="Graduation Year">
+                          <Form.Select
+                            aria-label="Floating label select graduation year"
+                            className='cursor-pointer'
+                            name='graduationYear'
+                            value={userData?.studentProfile?.graduationYear || "undefined"}
+                            onChange={(e) => {
+                              setUserData({
+                                ...userData,
+                                studentProfile: {
+                                  ...userData?.studentProfile,
+                                  graduationYear: parseInt(e.target.value) || undefined
+                                }
+                              });
+                            }}
+                          >
+                            <option disabled value="undefined" className='text-gray-400'>Enter Graduation Year</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                            <option value="2029">2029</option>
+                            <option value="2030">2030</option>
                           </Form.Select>
                         </FloatingLabel>
                         <FloatingLabel controlId="floatingLiveKT" label="Live KT's">
@@ -346,7 +375,7 @@ function UpdatePlacementProfile() {
                                 ...userData,
                                 studentProfile: {
                                   ...userData?.studentProfile,
-                                  liveKT: e.target.value
+                                  liveKT: parseInt(e.target.value) || 0
                                 }
                               });
                             }}
@@ -367,6 +396,27 @@ function UpdatePlacementProfile() {
                           }}
                           name='gap'
                           label="Any Gap"
+                        />
+                        <Form.Check
+                          type="switch"
+                          id="hasNOC"
+                          checked={userData?.studentProfile?.hasNOC === "true" || userData?.studentProfile?.hasNOC === true}
+                          onChange={(e) => {
+                            setUserData({
+                              ...userData,
+                              studentProfile: {
+                                ...userData?.studentProfile,
+                                hasNOC: e.target.checked
+                              }
+                            });
+                          }}
+                          name='hasNOC'
+                          label={
+                            <span>
+                              Has taken NOC (No Objection Certificate)
+                              {userData?.studentProfile?.hasNOC && <span className="text-red-500 font-bold block text-xs">WARNING: You will not be eligible to apply for any drives if NOC is taken.</span>}
+                            </span>
+                          }
                         />
                         {
                           cgpa !== "NaN" &&

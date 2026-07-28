@@ -70,13 +70,6 @@ function LandingNavbar() {
   Login
 </Button>
 
-          <Button
-  size={buttonSize}
-  className="px-3 md:w-32 !bg-[#904F09] !text-white hover:!bg-[#C0690C] hover:!text-white transition-all hover:scale-105 hover:shadow-md"
-  onClick={() => navigate('/student/signup')}
->
-  Sign Up
-</Button>
         </div>
       </div>
     </header>

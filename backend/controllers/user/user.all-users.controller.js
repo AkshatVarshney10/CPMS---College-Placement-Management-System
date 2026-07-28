@@ -4,7 +4,7 @@ const User = require("../../models/user.model");
 const AllUsersLen = async (req, res) => {
   try {
     const studentUsers = (await User.find({ role: "student" })).length;
-    const studentApprovalPendingUsers = (await User.find({ role: "student" })).filter(ele => !ele.studentProfile.isApproved).length;
+    const studentApprovalPendingUsers = 0;
     const tpoUsers = (await User.find({ role: "tpo_admin" })).length;
     const managementUsers = (await User.find({ role: "management_admin" })).length;
     const superUsers = (await User.find({ role: "superuser" })).length;

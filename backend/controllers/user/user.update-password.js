@@ -13,6 +13,7 @@ const UpdatePassword = async (req, res) => {
     if (isMatch) {
       const hashPassword = await bcrypt.hash(newpass, 10);
       user.password = hashPassword;
+      user.isPasswordChanged = true;
       await user.save();
 
       return res.send("Password Updated Successfully!");

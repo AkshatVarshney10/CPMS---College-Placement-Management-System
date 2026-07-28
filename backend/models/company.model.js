@@ -7,12 +7,17 @@ const companySchema = new Schema({
   companyDescription: { type: String },
   companyWebsite: { type: String },
   companyLocation: { type: String, trim: true },
-  companyDifficulty: { type: String, enum: ['Easy', 'Moderate', 'Hard'] }
+  // Category of the company (Generic, Core, or Dream) used for student eligibility check
+  category: { type: String, enum: ['Generic', 'Core', 'Dream'], default: 'Generic' },
+  hrName: { type: String, trim: true },
+  hrPhone: { type: String, trim: true },
+  hrEmail: { type: String, trim: true },
+  hrLinkedin: { type: String, trim: true }
 });
 
 
 // Pre middleware to delete jobs when the company is deleted
-companySchema.pre('deleteOne', { document: true, query: false }, async function (next) {
+companySchema.pre('deleteOne', { document: true, query: false }, async function () {
   try {
     const companyId = this._id; // Get the current company's ID
 
@@ -21,10 +26,9 @@ companySchema.pre('deleteOne', { document: true, query: false }, async function 
 
     // Delete all jobs associated with this company
     await Job.deleteMany({ company: companyId });
-
-    next(); // Proceed with the company deletion
   } catch (error) {
-    next(error); // Pass any errors to the next middleware
+    console.error("Error in company pre-deleteOne middleware:", error);
+    throw error;
   }
 });
 

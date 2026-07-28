@@ -3,7 +3,7 @@ import { FaListUl } from "react-icons/fa";
 import { AiFillHome } from "react-icons/ai";
 import { RiArrowDownSFill, RiArrowUpSFill, RiPlayListAddLine } from "react-icons/ri";
 import { PiStudentDuotone } from "react-icons/pi";
-import { FaClipboardCheck, FaIndustry, FaEnvelopeOpenText } from "react-icons/fa";
+import { FaClipboardCheck, FaIndustry, FaEnvelopeOpenText, FaChartBar } from "react-icons/fa";
 import { GrUserWorker } from "react-icons/gr";
 import { LiaIndustrySolid } from "react-icons/lia";
 
@@ -23,12 +23,6 @@ export const SidebarData = [
         title: "List All",
         path: "/management/students",
         icon: <FaListUl />,
-        cName: "sub-nav",
-      },
-      {
-        title: "Approve",
-        path: "/management/approve-student",
-        icon: <FaClipboardCheck />,
         cName: "sub-nav",
       },
     ],
@@ -90,6 +84,29 @@ export const SidebarData = [
         title: "Add New",
         path: "/management/post-job",
         icon: <RiPlayListAddLine />,
+      },
+    ],
+  },
+  {
+    title: "Eligibility & Applicants",
+    path: "/management/job-eligibility",
+    icon: <FaClipboardCheck />
+  },
+  {
+    title: "Placement Stats",
+    icon: <FaChartBar />,
+    iconClosed: <RiArrowDownSFill />,
+    iconOpened: <RiArrowUpSFill />,
+    subNav: [
+      {
+        title: "Overview",
+        path: "/management/placement-stats",
+        icon: <FaListUl />,
+      },
+      {
+        title: "Detailed Report",
+        path: "/management/detailed-placement-stats",
+        icon: <FaListUl />,
       },
     ],
   },

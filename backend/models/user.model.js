@@ -13,6 +13,7 @@ const UserSchema = new mongoose.Schema({
   },
   number: { type: Number, },
   password: { type: String, required: true },
+  isPasswordChanged: { type: Boolean, default: false },
   role: { type: String, enum: ['student', 'tpo_admin', 'management_admin', 'superuser'], required: true },
   profile: {
     type: String,
@@ -32,10 +33,12 @@ const UserSchema = new mongoose.Schema({
     rollNumber: { type: Number },
     resume: { type: String, },
     UIN: { type: String, unique: true, sparse: true, trim: true },
-    department: { type: String, enum: ['Computer', 'Civil', 'ECS', 'AIDS', 'Mechanical'] },
-    // department: { type: String, enum: ['CSE', 'IT', 'ECE', 'CS-Data Science', 'CS-Cyber Security'] },
+    department: { type: String, enum: ['Computer', 'Civil', 'ECS', 'AIDS', 'Mechanical', 'CSE', 'IT', 'ECE', 'CSE with DS', 'CSE with Cyber security'] },
     year: { type: Number, enum: [1, 2, 3, 4] },
     addmissionYear: { type: Number },
+    graduationYear: { type: Number, enum: [2027, 2028, 2029, 2030] },
+    cgpa: { type: Number, default: 0 },
+    hasNOC: { type: Boolean, default: false },
     gap: { type: Boolean, default: false },
     liveKT: { type: Number, default: 0 },
     SGPA: {
@@ -88,6 +91,14 @@ const UserSchema = new mongoose.Schema({
         description: { type: String },
       }
     ],
+    reportedPlacements: [
+      {
+         companyName: { type: String },
+         package: { type: Number }, // LPA
+         placementType: { type: String, enum: ['On-Campus', 'Off-Campus'], default: 'Off-Campus' },
+         reportedAt: { type: Date, default: Date.now }
+      }
+    ]
   },
 
   // TPO Admin specific fields

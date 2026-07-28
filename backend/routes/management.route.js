@@ -42,5 +42,16 @@ router.get('/get-notice', authenticateToken, GetNotice);
 
 router.post('/delete-notice', authenticateToken, DeleteNotice);
 
+// Job eligibility report endpoint
+const { GetJobEligibilityReport } = require('../controllers/Management/job-eligibility.controller');
+router.get('/job-eligibility-report', authenticateToken, GetJobEligibilityReport);
+
+// Placement statistics endpoint
+const { GetPlacementStats } = require('../controllers/Management/placement-stats.controller');
+router.get('/placement-stats', authenticateToken, GetPlacementStats);
+
+// Detailed placement statistics endpoint
+const { GetDetailedPlacementStats } = require('../controllers/Management/detailed-placement-stats.controller');
+router.get('/detailed-placement-stats', authenticateToken, GetDetailedPlacementStats);
 
 module.exports = router;

@@ -4,16 +4,8 @@ import { useNavigate } from 'react-router-dom';
 
 function LandingHeroPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-
-  const handleCreateAccount = () => {
-    if (email.trim()) {
-      navigate('/student/signup', {
-        state: { prefillEmail: email }
-      });
-    } else {
-      navigate('/student/signup');
-    }
+  const handleLogin = () => {
+    navigate('/student/login');
   }
 
   const handleScrollAbout = () => document.getElementById('about').scrollIntoView();
@@ -40,20 +32,13 @@ function LandingHeroPage() {
           Discover opportunities, track progress, and connect with your tpo — all in one place.
         </p> */}
 
-        <div className="mt-10 flex flex-col sm:flex-row gap-4 ">
-          <input
-            type="email"
-            className="px-5 py-3 w-80 sm:w-96 rounded-xl shadow-md focus:outline-none focus:ring-4 focus:ring-green-400 text-black transition duration-300"
-            placeholder="Enter your email..."
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+        <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
           <button
             type="button"
-            className="bg-[#BC6910] hover:bg-[#5E3408] transition duration-300 px-6 py-3 rounded-xl text-white font-semibold shadow-lg"
-            onClick={handleCreateAccount}
+            className="bg-[#BC6910] hover:bg-[#5E3408] transition duration-300 px-8 py-3 rounded-xl text-white font-semibold shadow-lg text-lg"
+            onClick={handleLogin}
           >
-            Create Account
+            Login to Portal
           </button>
         </div>
 

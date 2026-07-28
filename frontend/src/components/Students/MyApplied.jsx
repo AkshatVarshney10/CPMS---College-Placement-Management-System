@@ -85,7 +85,8 @@ function MyApplied() {
                 <th style={{ width: '6%' }}>Sr. No.</th>
                 <th style={{ width: '16%' }}><b>Company Name</b></th>
                 <th style={{ width: '16%' }}>Job Title</th>
-                <th style={{ width: '10%' }}>Annual CTC</th>
+                <th style={{ width: '10%' }}>Stipend</th>
+                <th style={{ width: '10%' }}>Expected CTC</th>
                 <th style={{ width: '10%' }}>Applied On</th>
                 <th style={{ width: '10%' }}>Last date of Application</th>
                 <th style={{ width: '10%' }}>Status</th>
@@ -107,7 +108,10 @@ function MyApplied() {
                       {job?.jobTitle}
                     </td>
                     <td>
-                      {job?.salary}
+                      {job?.stipend ? `₹${job.stipend.toLocaleString('en-IN')} / month` : 'N/A'}
+                    </td>
+                    <td>
+                      {job?.expectedCTC ? `${job.expectedCTC} LPA` : (job?.salary ? `${job.salary} LPA` : 'N/A')}
                     </td>
                     <td>
                       {new Date(job?.appliedAt.split('T')).toLocaleDateString('en-IN')}
