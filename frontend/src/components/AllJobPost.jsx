@@ -136,7 +136,6 @@ function AllJobPost() {
 
   return (
     <>
-      {/* Toast Component */}
       <Toast
         show={showToast}
         onClose={() => setShowToast(false)}
@@ -145,150 +144,151 @@ function AllJobPost() {
         position="bottom-end"
       />
 
-      <div className=''>
-        {
-          loading || !currentUser ? (
+      <div className="max-w-7xl mx-auto space-y-6 pb-12">
+        <div className="bg-white rounded-3xl border border-stone-200/80 shadow-xs p-6 space-y-6">
+          {/* Top Bar */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-bold text-stone-900 tracking-tight flex items-center gap-2">
+                Placement Listings
+                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                  {jobs?.length || 0} Drives Active
+                </span>
+              </h3>
+              <p className="text-xs text-stone-500 mt-0.5">
+                Active recruitment opportunities, stipend breakdown, CTC packages, and applicant statistics.
+              </p>
+            </div>
+          </div>
+
+          {loading || !currentUser ? (
             <TablePlaceholder />
           ) : (
-            <div className="overflow-x-auto max-sm:text-sm max-sm:p-1">
-              <div className="table-scrollbar">
-                <Table striped bordered hover className='bg-white my-6 rounded-lg shadow w-full'>
-                  <thead>
-                    <tr>
-                      <th>Sr. No.</th>
-                      <th><b>Company Name</b></th>
-                      <th>Job Title</th>
-                      <th>Stipend</th>
-                      <th>Expected CTC</th>
-                      <th>Last date of Application</th>
-                      <th>No. of Students Applied</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {jobs?.length > 0 ? (
-                      jobs?.map((job, index) => {
-                        const isMatched = job?.applicants?.find(student => student.studentId == currentUser.id);
-                        return (
-                          <tr
-                            key={job?._id}
-                            className={`${isMatched ? 'table-success' : ''}`}
-                          >
-                            <td>{index + 1}</td>
-                            <td>
-                              <b>
-                                {companies[job?.company] || <Placeholder as="p" animation="glow">
-                                  <Placeholder xs={12} />
-                                </Placeholder>}
-                              </b>
-                            </td>
-                            <td>{job?.jobTitle}</td>
-                            <td>{job?.stipend ? `₹${job.stipend.toLocaleString('en-IN')} / month` : 'N/A'}</td>
-                            <td>{job?.expectedCTC ? `${job.expectedCTC} LPA` : (job?.salary ? `${job.salary} LPA` : 'N/A')}</td>
-                            <td>{new Date(job?.applicationDeadline).toLocaleDateString('en-In')}</td>
-                            <td>{job?.applicants?.length}</td>
-                            <td>
-                              <div className="flex justify-around items-center">
-                                <div className="px-0.5">
-                                  {/* View Post */}
-                                  <OverlayTrigger
-                                    placement="top"
-                                    delay={{ show: 250, hide: 400 }}
-                                    overlay={<Tooltip>View Post</Tooltip>}
+            <div className="overflow-x-auto rounded-2xl border border-stone-200/80">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-stone-900 text-stone-300 font-semibold uppercase tracking-wider text-[11px] border-b border-stone-800">
+                    <th className="py-3.5 px-4 w-14 text-center">Sr. No.</th>
+                    <th className="py-3.5 px-4">Company Name</th>
+                    <th className="py-3.5 px-4">Job Title</th>
+                    <th className="py-3.5 px-4">Stipend</th>
+                    <th className="py-3.5 px-4">Expected CTC</th>
+                    <th className="py-3.5 px-4">Deadline</th>
+                    <th className="py-3.5 px-4 text-center">Applicants</th>
+                    <th className="py-3.5 px-4 text-center w-28">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-200/70 text-stone-700 bg-white">
+                  {jobs?.length > 0 ? (
+                    jobs.map((job, index) => {
+                      const isMatched = job?.applicants?.find(student => student.studentId == currentUser.id);
+                      return (
+                        <tr
+                          key={job?._id}
+                          className={`hover:bg-amber-50/40 transition-colors ${
+                            isMatched ? 'bg-emerald-50/50' : ''
+                          }`}
+                        >
+                          <td className="py-3.5 px-4 text-center font-medium text-stone-500">{index + 1}</td>
+                          <td className="py-3.5 px-4 font-bold text-stone-900 text-sm">
+                            {companies[job?.company] || (
+                              <span className="text-stone-400 italic">Loading company...</span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 font-semibold text-stone-800">
+                            {job?.jobTitle}
+                          </td>
+                          <td className="py-3.5 px-4 font-mono font-medium text-stone-700">
+                            {job?.stipend ? `₹${job.stipend.toLocaleString('en-IN')} / mo` : 'N/A'}
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <span className="bg-amber-100 text-amber-800 border border-amber-200 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
+                              {job?.expectedCTC ? `${job.expectedCTC} LPA` : (job?.salary ? `${job.salary} LPA` : 'N/A')}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 text-stone-500 font-medium">
+                            {job?.applicationDeadline ? new Date(job.applicationDeadline).toLocaleDateString('en-IN') : 'N/A'}
+                          </td>
+                          <td className="py-3.5 px-4 text-center">
+                            <span className="inline-flex items-center justify-center min-w-[28px] h-6 px-2 rounded-full bg-stone-100 text-stone-900 font-extrabold text-xs">
+                              {job?.applicants?.length || 0}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 text-center">
+                            <div className="flex items-center justify-center gap-1.5">
+                              {/* View Job */}
+                              <button
+                                onClick={() => {
+                                  const rolePaths = {
+                                    'tpo_admin': `../tpo/job/${job._id}`,
+                                    'management_admin': `../management/job/${job._id}`,
+                                    'superuser': `../admin/job/${job._id}`,
+                                    'student': `../student/job/${job._id}`,
+                                  };
+                                  navigate(rolePaths[currentUser.role]);
+                                }}
+                                className="p-2 rounded-lg bg-stone-100 text-stone-700 hover:bg-stone-800 hover:text-white transition-all shadow-xs cursor-pointer"
+                                title="View Details"
+                              >
+                                <i className="fa-solid fa-circle-info text-xs" />
+                              </button>
+
+                              {currentUser.role !== 'student' && (
+                                <>
+                                  {/* Edit Job */}
+                                  <button
+                                    onClick={() => {
+                                      const rolePaths = {
+                                        'tpo_admin': `../tpo/post-job/${job._id}`,
+                                        'management_admin': `../management/post-job/${job._id}`,
+                                        'superuser': `../admin/post-job/${job._id}`,
+                                      };
+                                      navigate(rolePaths[currentUser.role]);
+                                    }}
+                                    className="p-2 rounded-lg bg-stone-100 text-stone-700 hover:bg-emerald-600 hover:text-white transition-all shadow-xs cursor-pointer"
+                                    title="Edit Job"
                                   >
-                                    <i
-                                      className="fa-solid fa-circle-info text-2xl max-sm:text-lg cursor-pointer transition-colors duration-200 ease-in-out hover:text-blue-500"
-                                      onClick={() => {
-                                        const rolePaths = {
-                                          'tpo_admin': `../tpo/job/${job._id}`,
-                                          'management_admin': `../management/job/${job._id}`,
-                                          'superuser': `../admin/job/${job._id}`,
-                                          'student': `../student/job/${job._id}`,
-                                        };
-                                        navigate(rolePaths[currentUser.role]);
-                                      }}
-                                    />
-                                  </OverlayTrigger>
-                                </div>
-                                {
-                                  currentUser.role !== 'student' && (
-                                    <>
-                                      {/* Edit Post */}
-                                      <div className="px-0.5">
-                                        <OverlayTrigger
-                                          placement="top"
-                                          delay={{ show: 250, hide: 400 }}
-                                          overlay={<Tooltip>Edit Post</Tooltip>}
-                                        >
-                                          <i
-                                            className="fa-regular fa-pen-to-square text-2xl max-sm:text-lg cursor-pointer transition-colors duration-200 ease-in-out hover:text-green-500 hover:fa-solid"
-                                            onClick={() => {
-                                              const rolePaths = {
-                                                'tpo_admin': `../tpo/post-job/${job._id}`,
-                                                'management_admin': `../management/post-job/${job._id}`,
-                                                'superuser': `../admin/post-job/${job._id}`,
-                                              };
-                                              navigate(rolePaths[currentUser.role]);
-                                            }}
-                                          />
-                                        </OverlayTrigger>
-                                      </div>
+                                    <i className="fa-solid fa-pen-to-square text-xs" />
+                                  </button>
 
-                                      {/* Delete Post */}
-                                      <div className="px-0.5">
-                                        <OverlayTrigger
-                                          placement="top"
-                                          delay={{ show: 250, hide: 400 }}
-                                          overlay={<Tooltip>Delete Post</Tooltip>}
-                                        >
-                                          <i
-                                            className="fa-regular fa-trash-can text-2xl max-sm:text-lg cursor-pointer transition-colors duration-200 ease-in-out hover:text-red-500 hover:fa-solid"
-                                            onClick={() => handleDeletePost(job?._id, companies[job?.company], job?.jobTitle)}
-                                          />
-                                        </OverlayTrigger>
-                                      </div>
-                                    </>
-                                  )
-                                }
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    ) : (
-                      <tr>
-                        <td colSpan="7" className="text-center">
-                          No Job Posts Found!
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </Table>
-              </div>
+                                  {/* Delete Job */}
+                                  <button
+                                    onClick={() => handleDeletePost(job?._id, companies[job?.company], job?.jobTitle)}
+                                    className="p-2 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-all shadow-xs cursor-pointer"
+                                    title="Delete Job"
+                                  >
+                                    <i className="fa-solid fa-trash-can text-xs" />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan="8" className="py-12 text-center text-stone-400 font-medium">
+                        No Job Listings Available
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
+          )}
+        </div>
 
-
-
-          )
-        }
+        {/* Modal Box for Confirm Delete */}
+        <ModalBox
+          show={showModal}
+          close={closeModal}
+          header={`Confirm Delete ${modalBody?.cmpName}`}
+          body={`Are you sure you want to delete the job posting for ${modalBody?.jbTitle} from ${modalBody?.cmpName}?`}
+          btn={"Delete Job"}
+          confirmAction={() => confirmDelete(dataToParasModal)}
+        />
       </div>
-
-      {/* Modal Box for Confirm Delete */}
-      <ModalBox
-        show={showModal}
-        modalHeader={`Confirm Delete ${modalBody?.cmpName}`}
-        modalBody={<>
-          Are you sure you want to delete this post of <b>{modalBody?.jbTitle}</b> from {modalBody?.cmpName}?
-        </>}
-        modalActions={<>
-          <button className='btn btn-secondary' onClick={closeModal}>
-            Cancel
-          </button>
-          <button className='btn btn-danger' onClick={() => confirmDelete(dataToParasModal)}>
-            Delete
-          </button>
-        </>}
-      />
     </>
   );
 }

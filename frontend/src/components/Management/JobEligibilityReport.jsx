@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import Table from "react-bootstrap/Table";
-import Form from "react-bootstrap/Form";
-import Placeholder from "react-bootstrap/Placeholder";
-import { FaFileExcel, FaSearch, FaUserCheck, FaUserFriends, FaInfoCircle } from "react-icons/fa";
+import { FaSearch, FaUserCheck, FaUserFriends, FaInfoCircle, FaBriefcase, FaGraduationCap } from "react-icons/fa";
 import Toast from "../Toast";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
@@ -16,9 +13,8 @@ function JobEligibilityReport() {
   const [selectedJobId, setSelectedJobId] = useState("");
   const [searchEligible, setSearchEligible] = useState("");
   const [searchApplied, setSearchApplied] = useState("");
-  const [activeTab, setActiveTab] = useState("eligible"); // "eligible" or "applied"
+  const [activeTab, setActiveTab] = useState("eligible");
 
-  // Toast notifications
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
@@ -54,7 +50,6 @@ function JobEligibilityReport() {
 
   const selectedJob = reportData.find(item => item.jobId === selectedJobId);
 
-  // Filters
   const filteredEligible = selectedJob?.eligibleStudents?.filter(student => {
     const fullName = `${student.first_name || ""} ${student.last_name || ""}`.toLowerCase();
     const query = searchEligible.toLowerCase();
@@ -77,34 +72,32 @@ function JobEligibilityReport() {
     );
   }) || [];
 
-  // Helper to get bootstrap badges for drive category
   const getCategoryBadge = (category) => {
     switch (category) {
       case "Dream":
-        return <span className="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-purple-200">Dream</span>;
+        return <span className="bg-purple-100 text-purple-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-purple-200">Dream</span>;
       case "Core":
-        return <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-blue-200">Core</span>;
+        return <span className="bg-amber-100 text-amber-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-amber-200">Core</span>;
       default:
-        return <span className="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-green-200">Generic</span>;
+        return <span className="bg-emerald-100 text-emerald-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-200">Generic</span>;
     }
   };
 
-  // Helper for applied student status
   const getStatusBadge = (status) => {
     switch (status) {
       case "hired":
-        return <span className="bg-emerald-100 text-emerald-800 text-xs font-medium px-2 py-0.5 rounded-full border border-emerald-200">Hired</span>;
+        return <span className="bg-emerald-100 text-emerald-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-200">Hired</span>;
       case "rejected":
-        return <span className="bg-rose-100 text-rose-800 text-xs font-medium px-2 py-0.5 rounded-full border border-rose-200">Rejected</span>;
+        return <span className="bg-rose-100 text-rose-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-rose-200">Rejected</span>;
       case "interview":
-        return <span className="bg-amber-100 text-amber-800 text-xs font-medium px-2 py-0.5 rounded-full border border-amber-200">Interview</span>;
+        return <span className="bg-amber-100 text-amber-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-amber-200">Interview</span>;
       default:
-        return <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full border border-blue-200">Applied</span>;
+        return <span className="bg-blue-100 text-blue-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-blue-200">Applied</span>;
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="max-w-7xl mx-auto space-y-8 pb-12">
       <Toast
         show={showToast}
         onClose={() => setShowToast(false)}
@@ -113,76 +106,88 @@ function JobEligibilityReport() {
         position="bottom-end"
       />
 
-      <div className="bg-white/90 backdrop-blur-md border border-gray-200 rounded-xl shadow-lg p-6 mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-          <FaUserCheck className="text-blue-600" />
-          Job Eligibility & Applicant Analysis
-        </h2>
+      {/* Header Container */}
+      <div className="bg-white rounded-3xl border border-stone-200/80 shadow-xs p-6 sm:p-8 space-y-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 border border-amber-200/80 flex items-center justify-center text-xl shadow-xs">
+              <FaUserCheck />
+            </div>
+            <div>
+              <h2 className="text-xl font-extrabold text-stone-900 tracking-tight">
+                Job Eligibility & Applicant Analysis
+              </h2>
+              <p className="text-xs text-stone-500 mt-0.5">
+                Evaluate student eligibility matrix and track application progress per drive.
+              </p>
+            </div>
+          </div>
+        </div>
 
         {loading ? (
-          <div className="space-y-4">
-            <Placeholder as="div" animation="glow">
-              <Placeholder xs={6} size="lg" className="rounded mb-3" />
-              <Placeholder xs={12} size="md" className="rounded mb-2" />
-              <Placeholder xs={8} size="md" className="rounded" />
-            </Placeholder>
+          <div className="flex justify-center py-12">
+            <div className="w-8 h-8 rounded-full border-3 border-amber-600 border-t-transparent animate-spin" />
           </div>
         ) : reportData.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <FaInfoCircle className="text-4xl mx-auto mb-3 text-blue-500" />
-            <p className="text-lg font-medium">No job postings found.</p>
+          <div className="text-center py-12 text-stone-400">
+            <FaInfoCircle className="text-4xl mx-auto mb-3 text-amber-500/60" />
+            <p className="text-base font-semibold text-stone-700">No active job postings found.</p>
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Job Selection Dropdown */}
-            <div className="max-w-md">
-              <label htmlFor="job-selector" className="block text-sm font-semibold text-gray-700 mb-2">
+            {/* Selector */}
+            <div className="max-w-md space-y-1.5">
+              <label htmlFor="job-selector" className="block text-xs font-bold uppercase tracking-wider text-stone-700">
                 Select Active Job Posting
               </label>
-              <Form.Select
+              <select
                 id="job-selector"
                 value={selectedJobId}
                 onChange={(e) => setSelectedJobId(e.target.value)}
-                className="form-select border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="w-full px-4 py-3 text-sm rounded-xl bg-stone-50 border border-stone-200 text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all cursor-pointer font-semibold"
               >
                 {reportData.map((job) => (
                   <option key={job.jobId} value={job.jobId}>
-                    {job.companyName} - {job.jobTitle}
+                    {job.companyName} — {job.jobTitle}
                   </option>
                 ))}
-              </Form.Select>
+              </select>
             </div>
 
-            {/* Selected Job Criteria Details */}
+            {/* Selected Job Metadata Box */}
             {selectedJob && (
-              <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-gradient-to-br from-stone-900 to-stone-850 text-white rounded-2xl p-6 border border-stone-800 shadow-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-xs">
                 <div>
-                  <span className="text-xs text-gray-500 uppercase block font-semibold">Job Title</span>
-                  <span className="text-gray-900 font-medium">{selectedJob.jobTitle}</span>
+                  <span className="text-amber-400 font-bold uppercase tracking-wider text-[10px] block mb-1">
+                    Job Title
+                  </span>
+                  <span className="text-sm font-bold text-white">{selectedJob.jobTitle}</span>
                 </div>
                 <div>
-                  <span className="text-xs text-gray-500 uppercase block font-semibold">Company & Category</span>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-gray-900 font-medium">{selectedJob.companyName}</span>
+                  <span className="text-amber-400 font-bold uppercase tracking-wider text-[10px] block mb-1">
+                    Company & Tier
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-white">{selectedJob.companyName}</span>
                     {getCategoryBadge(selectedJob.companyCategory)}
                   </div>
                 </div>
                 <div>
-                  <span className="text-xs text-gray-500 uppercase block font-semibold">Enforced Requirements</span>
-                  <span className="text-gray-900 font-medium block">
-                    Min CGPA: <strong>{selectedJob.minCG || "0"}</strong>
+                  <span className="text-amber-400 font-bold uppercase tracking-wider text-[10px] block mb-1">
+                    Requirements
                   </span>
-                  <span className="text-gray-900 font-medium block">
-                    Backlogs: <strong>{selectedJob.noBacklog ? "No active backlogs" : "Allowed"}</strong>
-                  </span>
+                  <span className="text-stone-300 block">Min CGPA: <strong className="text-white">{selectedJob.minCG || "0"}</strong></span>
+                  <span className="text-stone-300 block">Backlogs: <strong className="text-white">{selectedJob.noBacklog ? "Zero allowed" : "Permitted"}</strong></span>
                 </div>
                 <div>
-                  <span className="text-xs text-gray-500 uppercase block font-semibold">Eligible Scope</span>
-                  <span className="text-gray-900 text-xs block truncate" title={selectedJob.eligibleBranches?.join(", ")}>
-                    Branches: <strong>{selectedJob.eligibleBranches?.length > 0 ? selectedJob.eligibleBranches.join(", ") : "All"}</strong>
+                  <span className="text-amber-400 font-bold uppercase tracking-wider text-[10px] block mb-1">
+                    Scope
                   </span>
-                  <span className="text-gray-900 text-xs block" title={selectedJob.eligibleBatches?.join(", ")}>
-                    Batches: <strong>{selectedJob.eligibleBatches?.length > 0 ? selectedJob.eligibleBatches.join(", ") : "All"}</strong>
+                  <span className="text-stone-300 block truncate" title={selectedJob.eligibleBranches?.join(", ")}>
+                    Branches: <strong className="text-white">{selectedJob.eligibleBranches?.length > 0 ? selectedJob.eligibleBranches.join(", ") : "All"}</strong>
+                  </span>
+                  <span className="text-stone-300 block" title={selectedJob.eligibleBatches?.join(", ")}>
+                    Batches: <strong className="text-white">{selectedJob.eligibleBatches?.length > 0 ? selectedJob.eligibleBatches.join(", ") : "All"}</strong>
                   </span>
                 </div>
               </div>
@@ -192,94 +197,94 @@ function JobEligibilityReport() {
       </div>
 
       {selectedJob && (
-        <div className="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+        <div className="bg-white border border-stone-200/80 rounded-3xl shadow-xs overflow-hidden">
           {/* Tab Navigation */}
-          <div className="flex border-b border-gray-200 bg-gray-50/75">
+          <div className="flex border-b border-stone-200 bg-stone-50/75 p-2 gap-2">
             <button
               onClick={() => setActiveTab("eligible")}
-              className={`flex-1 py-4 px-6 text-center font-semibold text-sm transition-all border-b-2 flex justify-center items-center gap-2 ${
+              className={`flex-1 py-3.5 px-6 rounded-2xl text-center font-bold text-xs transition-all flex justify-center items-center gap-2 cursor-pointer ${
                 activeTab === "eligible"
-                  ? "border-blue-600 text-blue-600 bg-white"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
+                  ? "bg-stone-900 text-white shadow-md"
+                  : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
               }`}
             >
-              <FaUserCheck />
+              <FaUserCheck className={activeTab === "eligible" ? "text-amber-400" : "text-stone-400"} />
               Eligible Students ({selectedJob.eligibleStudents?.length || 0})
             </button>
             <button
               onClick={() => setActiveTab("applied")}
-              className={`flex-1 py-4 px-6 text-center font-semibold text-sm transition-all border-b-2 flex justify-center items-center gap-2 ${
+              className={`flex-1 py-3.5 px-6 rounded-2xl text-center font-bold text-xs transition-all flex justify-center items-center gap-2 cursor-pointer ${
                 activeTab === "applied"
-                  ? "border-blue-600 text-blue-600 bg-white"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
+                  ? "bg-stone-900 text-white shadow-md"
+                  : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
               }`}
             >
-              <FaUserFriends />
+              <FaUserFriends className={activeTab === "applied" ? "text-amber-400" : "text-stone-400"} />
               Applied Students ({selectedJob.appliedStudents?.length || 0})
             </button>
           </div>
 
           {/* Tab Content */}
-          <div className="p-6">
+          <div className="p-6 space-y-6">
             {activeTab === "eligible" ? (
               <div>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                   <div className="relative w-full sm:max-w-xs">
-                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                      <FaSearch />
-                    </span>
+                    <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs" />
                     <input
                       type="text"
                       placeholder="Search eligible students..."
                       value={searchEligible}
                       onChange={(e) => setSearchEligible(e.target.value)}
-                      className="form-control pl-10 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                      className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl bg-stone-50 border border-stone-200 text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
                     />
                   </div>
-                  <div className="text-sm text-gray-500">
-                    Showing {filteredEligible.length} of {selectedJob.eligibleStudents?.length || 0} students
+                  <div className="text-xs font-semibold text-stone-500">
+                    Showing <strong className="text-stone-900">{filteredEligible.length}</strong> of {selectedJob.eligibleStudents?.length || 0} students
                   </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                  <Table striped bordered hover className="align-middle text-sm">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th>Sr. No</th>
-                        <th>Roll Number</th>
-                        <th>Name</th>
-                        <th>Branch</th>
-                        <th>CGPA</th>
-                        <th>Active Backlogs</th>
-                        <th>NOC Status</th>
-                        <th>Email</th>
+                <div className="overflow-x-auto rounded-2xl border border-stone-200/80">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-stone-900 text-stone-300 font-semibold uppercase tracking-wider text-[11px] border-b border-stone-800">
+                        <th className="py-3.5 px-4 w-12 text-center">Sr. No.</th>
+                        <th className="py-3.5 px-4">Roll Number</th>
+                        <th className="py-3.5 px-4">Student Name</th>
+                        <th className="py-3.5 px-4">Branch</th>
+                        <th className="py-3.5 px-4 text-center">CGPA</th>
+                        <th className="py-3.5 px-4 text-center">Backlogs</th>
+                        <th className="py-3.5 px-4 text-center">NOC</th>
+                        <th className="py-3.5 px-4">Email</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-stone-200/70 text-stone-700 bg-white">
                       {filteredEligible.length > 0 ? (
                         filteredEligible.map((student, index) => (
-                          <tr key={student._id}>
-                            <td>{index + 1}</td>
-                            <td>{student.rollNumber || "N/A"}</td>
-                            <td className="font-semibold text-gray-900">
+                          <tr key={student._id} className="hover:bg-amber-50/40 transition-colors">
+                            <td className="py-3.5 px-4 text-center font-medium text-stone-500">{index + 1}</td>
+                            <td className="py-3.5 px-4 font-mono font-medium text-stone-800">{student.rollNumber || "N/A"}</td>
+                            <td className="py-3.5 px-4 font-bold text-stone-900">
                               {student.first_name} {student.last_name}
                             </td>
-                            <td>{student.department || "N/A"}</td>
-                            <td>{student.cgpa !== undefined ? student.cgpa.toFixed(2) : "0.00"}</td>
-                            <td>
-                              <span className={student.liveKT > 0 ? "text-red-600 font-bold" : "text-green-600"}>
+                            <td className="py-3.5 px-4 font-medium text-stone-700">{student.department || "N/A"}</td>
+                            <td className="py-3.5 px-4 text-center font-bold text-stone-900">
+                              {student.cgpa !== undefined ? student.cgpa.toFixed(2) : "0.00"}
+                            </td>
+                            <td className="py-3.5 px-4 text-center font-bold">
+                              <span className={student.liveKT > 0 ? "text-rose-600" : "text-emerald-600"}>
                                 {student.liveKT || 0}
                               </span>
                             </td>
-                            <td>
+                            <td className="py-3.5 px-4 text-center">
                               {student.hasNOC ? (
-                                <span className="bg-red-100 text-red-800 text-xs font-semibold px-2 py-0.5 rounded border border-red-200">Yes</span>
+                                <span className="bg-rose-100 text-rose-800 border border-rose-200 px-2 py-0.5 rounded-full text-[11px] font-bold">Yes</span>
                               ) : (
-                                <span className="bg-green-100 text-green-800 text-xs font-semibold px-2 py-0.5 rounded border border-green-200">No</span>
+                                <span className="bg-emerald-100 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-full text-[11px] font-bold">No</span>
                               )}
                             </td>
-                            <td>
-                              <a href={`mailto:${student.email}`} className="text-blue-600 hover:underline">
+                            <td className="py-3.5 px-4">
+                              <a href={`mailto:${student.email}`} className="text-amber-700 hover:underline font-medium">
                                 {student.email}
                               </a>
                             </td>
@@ -287,73 +292,75 @@ function JobEligibilityReport() {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="8" className="text-center py-6 text-gray-500">
-                            No eligible students found matching the filters.
+                          <td colSpan="8" className="py-12 text-center text-stone-400 font-medium">
+                            No eligible students matching the current search.
                           </td>
                         </tr>
                       )}
                     </tbody>
-                  </Table>
+                  </table>
                 </div>
               </div>
             ) : (
               <div>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                   <div className="relative w-full sm:max-w-xs">
-                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                      <FaSearch />
-                    </span>
+                    <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs" />
                     <input
                       type="text"
                       placeholder="Search applied students..."
                       value={searchApplied}
                       onChange={(e) => setSearchApplied(e.target.value)}
-                      className="form-control pl-10 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                      className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl bg-stone-50 border border-stone-200 text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
                     />
                   </div>
-                  <div className="text-sm text-gray-500">
-                    Showing {filteredApplied.length} of {selectedJob.appliedStudents?.length || 0} students
+                  <div className="text-xs font-semibold text-stone-500">
+                    Showing <strong className="text-stone-900">{filteredApplied.length}</strong> of {selectedJob.appliedStudents?.length || 0} students
                   </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                  <Table striped bordered hover className="align-middle text-sm">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th>Sr. No</th>
-                        <th>Roll Number</th>
-                        <th>Name</th>
-                        <th>Branch</th>
-                        <th>CGPA</th>
-                        <th>Applied Date</th>
-                        <th>Selection Status</th>
-                        <th>Current Round</th>
-                        <th>Round Status</th>
-                        <th>Email</th>
+                <div className="overflow-x-auto rounded-2xl border border-stone-200/80">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-stone-900 text-stone-300 font-semibold uppercase tracking-wider text-[11px] border-b border-stone-800">
+                        <th className="py-3.5 px-4 w-12 text-center">Sr. No.</th>
+                        <th className="py-3.5 px-4">Roll Number</th>
+                        <th className="py-3.5 px-4">Student Name</th>
+                        <th className="py-3.5 px-4">Branch</th>
+                        <th className="py-3.5 px-4 text-center">CGPA</th>
+                        <th className="py-3.5 px-4">Applied Date</th>
+                        <th className="py-3.5 px-4 text-center">Status</th>
+                        <th className="py-3.5 px-4">Current Round</th>
+                        <th className="py-3.5 px-4 text-center">Round Status</th>
+                        <th className="py-3.5 px-4">Email</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-stone-200/70 text-stone-700 bg-white">
                       {filteredApplied.length > 0 ? (
                         filteredApplied.map((student, index) => (
-                          <tr key={student._id}>
-                            <td>{index + 1}</td>
-                            <td>{student.rollNumber || "N/A"}</td>
-                            <td className="font-semibold text-gray-900">
+                          <tr key={student._id} className="hover:bg-amber-50/40 transition-colors">
+                            <td className="py-3.5 px-4 text-center font-medium text-stone-500">{index + 1}</td>
+                            <td className="py-3.5 px-4 font-mono font-medium text-stone-800">{student.rollNumber || "N/A"}</td>
+                            <td className="py-3.5 px-4 font-bold text-stone-900">
                               {student.first_name} {student.last_name}
                             </td>
-                            <td>{student.department || "N/A"}</td>
-                            <td>{student.cgpa !== undefined ? student.cgpa.toFixed(2) : "0.00"}</td>
-                            <td>{student.appliedAt ? new Date(student.appliedAt).toLocaleDateString("en-IN") : "N/A"}</td>
-                            <td>{getStatusBadge(student.status)}</td>
-                            <td>{student.currentRound || "N/A"}</td>
-                            <td>
+                            <td className="py-3.5 px-4 font-medium text-stone-700">{student.department || "N/A"}</td>
+                            <td className="py-3.5 px-4 text-center font-bold text-stone-900">
+                              {student.cgpa !== undefined ? student.cgpa.toFixed(2) : "0.00"}
+                            </td>
+                            <td className="py-3.5 px-4 text-stone-500 font-medium">
+                              {student.appliedAt ? new Date(student.appliedAt).toLocaleDateString("en-IN") : "N/A"}
+                            </td>
+                            <td className="py-3.5 px-4 text-center">{getStatusBadge(student.status)}</td>
+                            <td className="py-3.5 px-4 font-medium text-stone-800">{student.currentRound || "N/A"}</td>
+                            <td className="py-3.5 px-4 text-center">
                               {student.roundStatus ? (
-                                <span className={`capitalize text-xs font-semibold px-2 py-0.5 rounded border ${
+                                <span className={`capitalize text-[11px] font-bold px-2 py-0.5 rounded-full border ${
                                   student.roundStatus === "passed"
-                                    ? "bg-green-50 text-green-700 border-green-200"
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                     : student.roundStatus === "failed"
-                                    ? "bg-red-50 text-red-700 border-red-200"
-                                    : "bg-gray-50 text-gray-700 border-gray-200"
+                                    ? "bg-rose-50 text-rose-700 border-rose-200"
+                                    : "bg-stone-100 text-stone-700 border-stone-200"
                                 }`}>
                                   {student.roundStatus}
                                 </span>
@@ -361,8 +368,8 @@ function JobEligibilityReport() {
                                 "N/A"
                               )}
                             </td>
-                            <td>
-                              <a href={`mailto:${student.email}`} className="text-blue-600 hover:underline">
+                            <td className="py-3.5 px-4">
+                              <a href={`mailto:${student.email}`} className="text-amber-700 hover:underline font-medium">
                                 {student.email}
                               </a>
                             </td>
@@ -370,13 +377,13 @@ function JobEligibilityReport() {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="10" className="text-center py-6 text-gray-500">
-                            No applied students found matching the filters.
+                          <td colSpan="10" className="py-12 text-center text-stone-400 font-medium">
+                            No applied students matching the current search.
                           </td>
                         </tr>
                       )}
                     </tbody>
-                  </Table>
+                  </table>
                 </div>
               </div>
             )}
