@@ -5,7 +5,7 @@ import Logo from '../../assets/CPMS.png';
 import Toast from '../../components/Toast';
 import isAuthenticated from '../../utility/auth.utility';
 import { Button } from 'react-bootstrap';
-const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 function LoginManagement() {
   useEffect(() => {
@@ -20,7 +20,7 @@ function LoginManagement() {
   // if login user visit redirect to home page
   useEffect(() => {
     if (isAuthenticated()) {
-      navigate("../tpo/dashboard");
+      navigate("../management/dashboard");
     }
   }, [navigate]);
 
@@ -49,19 +49,18 @@ function LoginManagement() {
     if (!formData?.email) return setError({ email: 'Email Required!' })
     if (!formData?.password) return setError({ password: 'Password Required!' })
 
-      console.log("Formdata on frontend: ", formData);
-      
     setLoading(true);
     try {
-      console.log("Above call....")
       const response = await axios.post(`${BASE_URL}/management/login`, formData);
-      console.log("RESPONSE: ", response);
 
       localStorage.setItem('token', response.data.token);
       navigate('/management/dashboard');
     } catch (error) {
-      if (error.response.data.msg) {
+      if (error?.response?.data?.msg) {
         setToastMessage(error.response.data.msg);
+        setShowToast(true);
+      } else {
+        setToastMessage(error?.message || "Server Error. Please try again.");
         setShowToast(true);
       }
       console.log("Error in Management login.jsx => ", error);

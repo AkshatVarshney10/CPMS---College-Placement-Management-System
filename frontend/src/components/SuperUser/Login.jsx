@@ -5,7 +5,7 @@ import Logo from '../../assets/CPMS.png';
 import isAuthenticated from '../../utility/auth.utility';
 import Toast from '../../components/Toast';
 import { Button } from 'react-bootstrap';
-const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 function LoginSuperUser() {
   document.title = 'CPMS | Admin Login';
@@ -52,8 +52,11 @@ function LoginSuperUser() {
       localStorage.setItem('token', response.data.token);
       navigate('../admin/dashboard');
     } catch (error) {
-      if (error.response.data.msg) {
+      if (error?.response?.data?.msg) {
         setToastMessage(error.response.data.msg);
+        setShowToast(true);
+      } else {
+        setToastMessage(error?.message || "Server Error. Please try again.");
         setShowToast(true);
       }
       console.log("Error in admin login.jsx => ", error);
