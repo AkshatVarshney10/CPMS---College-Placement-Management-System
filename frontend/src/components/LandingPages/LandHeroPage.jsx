@@ -6,7 +6,7 @@ function LandingHeroPage() {
   const navigate = useNavigate();
 
   const handleLogin = () => {
-    navigate('/student/login');
+    navigate('/login');
   };
 
   const handleScrollRoles = () => {
@@ -64,7 +64,7 @@ function LandingHeroPage() {
             onClick={handleLogin}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold text-base px-8 py-3.5 rounded-xl shadow-lg shadow-amber-600/25 hover:shadow-xl transition-all duration-200 hover:scale-[1.02] cursor-pointer"
           >
-            <span>Student Login</span>
+            <span>Login</span>
             <FaArrowRight className="text-sm" />
           </button>
           <button
