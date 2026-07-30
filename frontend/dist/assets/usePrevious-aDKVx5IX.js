@@ -1,1 +1,0 @@
-import{a as e,n as t}from"./jsx-runtime-Bg_NI1en.js";var n=e(t());function r(e){let t=(0,n.useRef)(null);return(0,n.useEffect)(()=>{t.current=e}),t.current}export{r as t};
