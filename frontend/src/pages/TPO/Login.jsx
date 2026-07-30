@@ -5,7 +5,7 @@ import Logo from '../../assets/CPMS.png';
 import Toast from '../../components/Toast';
 import isAuthenticated from '../../utility/auth.utility';
 import { Button } from 'react-bootstrap';
-const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 function LoginTPO() {
   document.title = 'CPMS | TPO Login';
@@ -49,14 +49,15 @@ function LoginTPO() {
     setLoading(true);
 
     try {
-      console.log("Above call....")
       const response = await axios.post(`${BASE_URL}/tpo/login`, formData);
-      console.log("RESponse: ", response);
       localStorage.setItem('token', response.data.token);
       navigate('/tpo/dashboard');
     } catch (error) {
-      if (error.response.data.msg) {
+      if (error?.response?.data?.msg) {
         setToastMessage(error.response.data.msg);
+        setShowToast(true);
+      } else {
+        setToastMessage(error?.message || "Server Error. Please try again.");
         setShowToast(true);
       }
       console.log("Error in TPO login.jsx => ", error);

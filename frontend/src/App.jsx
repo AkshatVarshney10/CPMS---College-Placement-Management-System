@@ -132,6 +132,7 @@ function App() {
             <Route path="/management/login" element={<LoginManagement />} />
             {/* admin login */}
             <Route path="/admin" element={<LoginSuperUser />} />
+            <Route path="/admin/login" element={<LoginSuperUser />} />
 
 
             {/* All student routes  */}
@@ -333,7 +334,7 @@ function App() {
             {/* all admin routes  */}
             <Route element={<UserProvider><ProtectedRoute allowedRoles={['superuser']} /></UserProvider>}>
               <Route element={<Layout header="Dashboard" />}>
-                <Route path="/admin/Dashboard" element={<HomeSuperUser />} />
+                <Route path="/admin/dashboard" element={<HomeSuperUser />} />
               </Route>
               <Route element={<Layout header="Management Users" />}>
                 <Route path="/admin/management" element={<ManagementSuperUser />} />

@@ -1,75 +1,90 @@
 import React, { useEffect, useState } from 'react';
-import Logo from '../../assets/CPMS.png';
 import { useNavigate } from 'react-router-dom';
-import { Button } from 'react-bootstrap';
+import { FaGraduationCap, FaArrowRight } from 'react-icons/fa';
 
 function LandingNavbar() {
   const navigate = useNavigate();
-
   const [isScrolled, setIsScrolled] = useState(false);
-  const [buttonSize, setButtonSize] = useState('lg');
-  const [logoText, setLogoText] = useState('College Placement Management System');
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 80);
+      setIsScrolled(window.scrollY > 40);
     };
-
-    const handleResize = () => {
-      const width = window.innerWidth;
-      if (width <= 600) {
-        setButtonSize('sm');
-        setLogoText('CPMS');
-      } else if (width <= 768) {
-        setButtonSize('md');
-        setLogoText('College Placement Management System');
-      } else {
-        setButtonSize('lg');
-        setLogoText('College Placement Management System');
-      }
-    };
-
-    handleResize();
     window.addEventListener('scroll', handleScroll);
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleResize);
-    };
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const scrollToSection = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <header
-      className={`w-full z-50 transition-all duration-300 ease-in-out ${isScrolled ? 'backdrop-blur-md bg-white/60 shadow-md sticky top-0' : ''
-        }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? 'bg-white/90 backdrop-blur-md shadow-sm border-b border-stone-200/80 py-3'
+          : 'bg-transparent py-5'
+      }`}
     >
-      <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center py-3 px-4">
-        {/* Logo Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        {/* Brand Logo */}
         <div
-          className="flex items-center max-md:gap-2 md:gap-4 cursor-pointer transition-transform hover:scale-105 duration-150"
+          className="flex items-center gap-3 cursor-pointer group"
           onClick={() => navigate('/')}
         >
-          <img
-            src={Logo}
-            alt="CPMS Logo"
-            className="rounded-xl border border-gray-300 w-16 h-16 md:w-20 md:h-20 shadow-sm"
-          />
-          <h1 className={`text-2xl md:text-4xl font-extrabold bg-gradient-to-r from-[#904F09] via-[#603406] to-[#904F09] bg-clip-text text-transparent`}>
-            {logoText}
-          </h1>
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-600 to-amber-700 flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform duration-200">
+            <FaGraduationCap className="text-xl" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-stone-900 leading-tight group-hover:text-amber-700 transition-colors">
+              IIIT Una Placement Portal
+            </h1>
+            <p className="text-xs text-stone-500 font-medium hidden sm:block">
+              Indian Institute of Information Technology Una
+            </p>
+          </div>
         </div>
 
-        {/* Button Section */}
-        <div className="flex max-md:gap-1 md:gap-3 items-center">
-          <Button
-  size={buttonSize}
-  className="px-3 md:w-32 !bg-[#904F09] !text-white hover:!bg-[#C0690C] hover:!text-white transition-all hover:scale-105 hover:shadow-md border-none"
-  onClick={() => navigate('/student/login')}
->
-  Login
-</Button>
+        {/* Navigation Links */}
+        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-stone-600">
+          <button
+            onClick={() => scrollToSection('roles')}
+            className="hover:text-amber-700 transition-colors cursor-pointer"
+          >
+            Platform Roles
+          </button>
+          <button
+            onClick={() => scrollToSection('process')}
+            className="hover:text-amber-700 transition-colors cursor-pointer"
+          >
+            How It Works
+          </button>
+          <button
+            onClick={() => scrollToSection('stats')}
+            className="hover:text-amber-700 transition-colors cursor-pointer"
+          >
+            Statistics
+          </button>
+          <button
+            onClick={() => scrollToSection('testimonials')}
+            className="hover:text-amber-700 transition-colors cursor-pointer"
+          >
+            Success Stories
+          </button>
+        </nav>
 
+        {/* Action Button */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate('/student/login')}
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-md shadow-amber-600/20 hover:shadow-lg transition-all duration-200 hover:scale-[1.02] cursor-pointer"
+          >
+            <span>Student Login</span>
+            <FaArrowRight className="text-xs" />
+          </button>
         </div>
       </div>
     </header>
