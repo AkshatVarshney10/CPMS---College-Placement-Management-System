@@ -79,10 +79,10 @@ function LandingNavbar() {
         {/* Action Button */}
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate('/student/login')}
+            onClick={() => navigate('/login')}
             className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-md shadow-amber-600/20 hover:shadow-lg transition-all duration-200 hover:scale-[1.02] cursor-pointer"
           >
-            <span>Student Login</span>
+            <span>Login</span>
             <FaArrowRight className="text-xs" />
           </button>
         </div>

@@ -1,54 +1,42 @@
-import React, { useEffect, useState } from 'react'
-import Accordion from 'react-bootstrap/Accordion';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Form from 'react-bootstrap/Form';
 import axios from 'axios';
-import FloatingLabel from 'react-bootstrap/FloatingLabel';
-import { Button } from 'react-bootstrap';
+import { 
+  FaUser, FaBuilding, FaBriefcase, FaCalendarAlt, FaMoneyBillWave, 
+  FaCheckCircle, FaFilePdf, FaTrashAlt, FaSave, FaArrowLeft, FaEye 
+} from 'react-icons/fa';
 import UploadOfferLetter from './UploadOfferLetter';
 import Toast from '../Toast';
 import ModalBox from '../Modal';
-import { LiaEye } from "react-icons/lia";
-import { PiEyeClosed } from "react-icons/pi";
+import SkeletonLoader from '../SkeletonLoader';
+
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 function UpdateJobStatus() {
-  document.title = 'CPMS | Update Job Application Status';
+  document.title = 'CPMS | Update Application Status';
   const navigate = useNavigate();
-
   const { jobId } = useParams();
 
   const [data, setData] = useState({});
   const [company, setCompany] = useState(null);
-  // for applicants of job 
   const [applicant, setApplicant] = useState({});
-  // useState for load data
   const [currentUser, setCurrentUser] = useState({});
-
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  // useState for toast display
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-
-  // for hovering on eye
-  const [eyeIsHover, setEyeIsHover] = useState(false);
-
-  // useState for Modal display
   const [showModal, setShowModal] = useState(false);
-
-  // check if hired 
   const [isHired, setHired] = useState(false);
 
   const closeModal = () => setShowModal(false);
 
-  // checking for authentication
   useEffect(() => {
     const token = localStorage.getItem('token');
+    if (!token) return;
+
     axios.get(`${BASE_URL}/user/detail`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+      headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
         setCurrentUser({
@@ -59,109 +47,69 @@ function UpdateJobStatus() {
           email: res.data.email,
           number: res.data.number,
           role: res.data.role,
-          uin: res.data.studentProfile.uin,
+          uin: res.data.studentProfile?.uin,
         });
       })
       .catch(err => {
-        console.log("AddUserTable.jsx => ", err);
-        setToastMessage(err);
-        setShowToast(true);
+        console.error("Error fetching user detail:", err);
       });
   }, []);
 
   const fetchJobDetail = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/tpo/job/${jobId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          }
-        }
-      )
-      setData(response.data);
-    } catch (error) {
-      if (error.response) {
-        if (error?.response.data?.msg) setToastMessage(error.response.data.msg)
-        else setToastMessage(error.message)
-        setShowToast(true);
-        if (error?.response?.data?.msg === "job data not found") navigate('../404');
+      const response = await axios.get(`${BASE_URL}/tpo/job/${jobId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+      setData(response.data || {});
+      if (response.data?.company) {
+        fetchCompanyData(response.data.company);
       }
-      console.log("Error while fetching details => ", error);
-    }
-  }
-
-  const fetchCompanyData = async () => {
-    try {
-      const response = await axios.get(`${BASE_URL}/company/company-data?companyId=${data.company}`);
-      setCompany(response.data.company);
     } catch (error) {
-      console.log("AddCompany error while fetching => ", error);
+      console.error("Error fetching job detail:", error);
+      if (error.response?.data?.msg) {
+        setToastMessage(error.response.data.msg);
+        setShowToast(true);
+      }
     }
-  }
+  };
+
+  const fetchCompanyData = async (companyId) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/company/company-data?companyId=${companyId}`);
+      setCompany(response.data.company || null);
+    } catch (error) {
+      console.error("Error fetching company:", error);
+    }
+  };
 
   const fetchJobDetailsOfApplicant = async () => {
-    if (data?.applicants?.length !== 0) {
-      // Find if the student user has applied
-
-      const appliedApplicant = await data.applicants.find(app => app.studentId === currentUser.id);
-      // console.log(appliedApplicant)
-      if (appliedApplicant) setApplicant(appliedApplicant) // If no applicant found, navigate to 404
-      else navigate('../404');
-
-      // if status is hired then set hired and show package input
-      if (appliedApplicant.status === 'hired') setHired(true);
-    }
-  }
-
-  const handleSubmit = async () => {
-    if (applicant?.status === 'hired' && !applicant?.package) {
-      setToastMessage("Package Offered Required!");
-      setShowToast(true);
-      return;
-    }
-    try {
-      // console.log(applicant);
-      const response = await axios.post(`${BASE_URL}/student/update-status/${jobId}/${currentUser.id}`, { applicant });
-      // console.log(response.data);
-      if (response?.data?.msg) {
-        setToastMessage(response?.data?.msg);
-        setShowToast(true);
-        // Fetch updated applicant data to ensure state is current
-        // await fetchJobDetail();
-        // await fetchJobDetailsOfApplicant();
+    if (data?.applicants?.length) {
+      const appliedApplicant = data.applicants.find(app => app.studentId === currentUser.id);
+      if (appliedApplicant) {
+        setApplicant(appliedApplicant);
+        if (appliedApplicant.status === 'hired') setHired(true);
       }
-    } catch (error) {
-      if (error?.response?.data?.msg) {
-        setToastMessage(error?.response?.data?.msg);
-        setShowToast(true);
-      }
-      console.log("Error while update job status => ", error);
     }
-  }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         await fetchJobDetail();
-        if (data?.company) {
-          await fetchCompanyData();
-        }
-        if (data?.applicants && currentUser?.id) {
-          await fetchJobDetailsOfApplicant();
-        }
-        if (applicant.status === 'hired') setHired(true);
-        setLoading(false);
       } catch (error) {
-        setToastMessage("Error during fetching and applying job");
-        setShowToast(true);
-        console.error("Error during fetching and applying job:", error);
+        console.error("Error during fetching job detail:", error);
+      } finally {
+        setLoading(false);
       }
     };
-
     fetchData();
-  }, [currentUser?.id, data?.company, jobId]);
+  }, [jobId]);
 
-  // console.log(applicant)
+  useEffect(() => {
+    if (data?.applicants && currentUser?.id) {
+      fetchJobDetailsOfApplicant();
+    }
+  }, [currentUser?.id, data]);
 
   const handleApplicantChange = (e) => {
     setApplicant({
@@ -169,48 +117,72 @@ function UpdateJobStatus() {
       [e.target.name]: e.target.value
     });
 
-    if (e.target.name === 'status' && e.target.value === 'hired') setHired(true)
-    if (e.target.name === 'status' && e.target.value !== 'hired') setHired(false)
-  }
+    if (e.target.name === 'status') {
+      if (e.target.value === 'hired') setHired(true);
+      else setHired(false);
+    }
+  };
 
-
-  // for formating date of birth
   const formatDate = (isoString) => {
     if (!isoString || isoString === "undefined") return "";
     const date = new Date(isoString);
-    return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD
+    return date.toISOString().split('T')[0];
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (applicant?.status === 'hired' && !applicant?.package) {
+      setToastMessage("Package Offered is required for Hired status!");
+      setShowToast(true);
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const response = await axios.post(`${BASE_URL}/student/update-status/${jobId}/${currentUser.id}`, { applicant });
+      if (response?.data?.msg) {
+        setToastMessage(response.data.msg);
+        setShowToast(true);
+      }
+    } catch (error) {
+      console.error("Error updating job status:", error);
+      setToastMessage(error.response?.data?.msg || "Failed to update status");
+      setShowToast(true);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleDelete = () => setShowModal(true);
 
-  // delete offer letter 
   const confirmDelete = async () => {
     try {
       const response = await axios.post(`${BASE_URL}/student/delete-offer-letter/${jobId}/${currentUser.id}`, { applicant });
-      // console.log(response.data);
       if (response?.data?.msg) {
-        setToastMessage(response?.data?.msg);
+        setToastMessage(response.data.msg);
         setShowToast(true);
         setShowModal(false);
-        // Fetch updated applicant data to ensure state is current
-        await fetchJobDetail();
-        await fetchJobDetailsOfApplicant();
+        fetchJobDetail();
       }
     } catch (error) {
-      if (error?.response?.data?.msg) {
-        setToastMessage(error?.response?.data?.msg);
-        setShowToast(true);
-      }
+      console.error("Error deleting offer letter:", error);
+      setToastMessage(error.response?.data?.msg || "Error deleting offer letter");
+      setShowToast(true);
       setShowModal(false);
-      console.log("Error while update job status => ", error);
     }
+  };
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto space-y-6 pb-12">
+        <SkeletonLoader type="card" count={2} />
+      </div>
+    );
   }
 
   return (
-    <>
-      {/*  any message here  */}
-      < Toast
+    <div className="max-w-7xl mx-auto space-y-8 pb-16">
+      <Toast
         show={showToast}
         onClose={() => setShowToast(false)}
         message={toastMessage}
@@ -218,257 +190,229 @@ function UpdateJobStatus() {
         position="bottom-end"
       />
 
-      {
-        loading ? (
-          <div className="flex justify-center h-72 items-center">
-            <i className="fa-solid fa-spinner fa-spin text-3xl" />
+      {/* Back Button & Header Banner */}
+      <div className="space-y-4">
+        <button
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl text-xs font-bold text-slate-700 transition-all cursor-pointer shadow-2xs"
+        >
+          <FaArrowLeft /> Back to Applied Jobs
+        </button>
+
+        <div className="relative rounded-3xl bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 p-8 sm:p-10 border border-slate-800 shadow-2xl overflow-hidden text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-amber-500 to-orange-500" />
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 text-xs font-semibold border border-amber-500/30">
+              <FaBriefcase className="text-xs" /> Application Audit Tracker
+            </div>
+            <h2 className="text-3xl font-extrabold tracking-tight">Update Application Status</h2>
+            <p className="text-slate-400 text-xs sm:text-sm max-w-xl">
+              Keep your recruitment round progress, interview selection dates, offer letters, and package details current.
+            </p>
           </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-2 gap-2 my-6 text-base max-sm:grid-cols-1 max-sm:text-sm">
-              <div className="flex flex-col gap-2">
-                <div className="">
-                  {/* Basic Details  */}
-                  <Accordion defaultActiveKey={['0']} alwaysOpen className='shadow rounded w-full max-sm:w-fit'>
-                    <Accordion.Item eventKey="0">
-                      <Accordion.Header>Basic Details</Accordion.Header>
-                      <Accordion.Body>
-                        <div className="">
-                          {/* company name  */}
-                          <div className="flex flex-col justify-between py-2">
-                            {/* Basic Info */}
-                            <div className="flex justify-between">
-                              <div className="space-y-4">
-                                <div>
-                                  <span className="text-gray-700 font-bold">Full Name: </span>
-                                  <span className="text-blue-500 font-bold">
-                                    {currentUser?.first_name + " "}
-                                    {currentUser?.middle_name && currentUser?.middle_name + " "}
-                                    {currentUser?.last_name}
-                                  </span>
-                                </div>
+        </div>
+      </div>
 
-                                <div>
-                                  <span className="text-gray-700 font-bold">Email: </span>
-                                  <span className="text-blue-500 font-bold">
-                                    {currentUser?.email}
-                                  </span>
-                                </div>
-
-                                <div>
-                                  <span className="text-gray-700 font-bold">Number: </span>
-                                  <span className="text-blue-500 font-bold">
-                                    {currentUser?.number}
-                                  </span>
-                                </div>
-
-                                {
-                                  currentUser?.uin && (
-                                    <div>
-                                      <span className="text-gray-700 font-bold">UIN: </span>
-                                      <span className="text-blue-500 font-bold">
-                                        {currentUser?.uin}
-                                      </span>
-                                    </div>
-                                  )
-                                }
-                                <div>
-                                  <span className="text-gray-700 font-bold">Company Name: </span>
-                                  <span className="text-blue-500 font-bold">
-                                    {company?.companyName}
-                                  </span>
-                                </div>
-                                <div>
-                                  <span className="text-gray-700 font-bold">Job Title: </span>
-                                  <span className="text-blue-500 font-bold">
-                                    {data?.jobTitle}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </Accordion.Body>
-                    </Accordion.Item>
-                  </Accordion>
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Card 1: Student & Drive Summary */}
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 sm:p-8 space-y-6 flex flex-col justify-between">
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200/80 flex items-center justify-center text-lg">
+                  <FaUser />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight">1. Student & Drive Metadata</h3>
+                  <p className="text-xs text-slate-500">Applicant profile & target drive information</p>
                 </div>
               </div>
-              <div className="">
-                {/* Job details  */}
-                <Accordion defaultActiveKey={['1']} alwaysOpen className='shadow rounded w-full max-sm:w-fit'>
-                  <Accordion.Item eventKey="1">
-                    <Accordion.Header>Job Details</Accordion.Header>
-                    <Accordion.Body>
-                      <div className="">
-                        <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
-                          {/* current round  */}
-                          <FloatingLabel controlId="floatingSelectCurrentRound" label="Current Round">
-                            <Form.Select
-                              aria-label="Floating label select current round"
-                              className='cursor-pointer'
-                              name='currentRound'
-                              value={applicant?.currentRound || "undefined"}
-                              onChange={handleApplicantChange}
-                            >
-                              <option disabled value="undefined" className='text-gray-400'>Enter Current Round</option>
-                              <option value="Aptitude Test">Aptitude Test</option>
-                              <option value="Technical Interview">Technical Interview</option>
-                              <option value="HR Interview">HR Interview</option>
-                              <option value="Group Discussion">Group Discussion</option>
-                            </Form.Select>
-                          </FloatingLabel>
-                          {/* round status  */}
-                          <FloatingLabel controlId="floatingSelectRoundStatus" label="Round Status">
-                            <Form.Select
-                              aria-label="Floating label select round status"
-                              className='cursor-pointer'
-                              name='roundStatus'
-                              value={applicant?.roundStatus || "undefined"}
-                              onChange={handleApplicantChange}
-                            >
-                              <option disabled value="undefined" className='text-gray-400'>Enter Round Status</option>
-                              <option value="pending">Pending</option>
-                              <option value="passed">Passed</option>
-                              <option value="failed">Failed</option>
-                            </Form.Select>
-                          </FloatingLabel>
-                          {/* selection date */}
-                          <FloatingLabel controlId="floatingSelectionDate" label="Selection Date">
-                            <Form.Control
-                              type="date"
-                              placeholder="Selection Date"
-                              name='selectionDate'
-                              value={formatDate(applicant?.selectionDate)}
-                              onChange={handleApplicantChange}
-                            />
-                          </FloatingLabel>
-                          {/* joining date */}
-                          <FloatingLabel controlId="floatingJoiningDate" label="Joining Date">
-                            <Form.Control
-                              type="date"
-                              placeholder="Joining Date"
-                              name='joiningDate'
-                              value={formatDate(applicant?.joiningDate)}
-                              onChange={handleApplicantChange}
-                            />
-                          </FloatingLabel>
-                          <div className="flex flex-col gap-2 justify-center items-center">
 
-                            {/* offer letter upload */}
-                            {/* sending jobId and function update applicant useState  */}
-                            <UploadOfferLetter jobId={jobId} fetchJobDetailsOfApplicant={fetchJobDetailsOfApplicant} />
-                            {
-                              applicant?.offerLetter &&
-                              <div className="cursor-pointer w-fit flex gap-1 justify-between items-center">
-                                <span
-                                  className='bg-blue-500 px-3 py-1 rounded transition duration-300 ease-in-out hover:bg-blue-700'
-                                  onMouseEnter={() => setEyeIsHover(true)}
-                                  onMouseLeave={() => setEyeIsHover(false)}
-                                >
-                                  <a
-                                    className='text-white no-underline flex justify-center items-center'
-                                    target="_blanck"
-                                    href={BASE_URL + applicant?.offerLetter}
-                                  >
-                                    {
-                                      eyeIsHover ? (
-                                        <PiEyeClosed className='pr-2 text-3xl' />
-                                      ) : (
-                                        <LiaEye className='pr-2 text-3xl' />
-                                      )
-                                    }
-                                    View Now
-                                  </a>
-                                </span>
-                                {/* delete offer letter  */}
-                                <span
-                                  className='text-white bg-red-500 px-3 py-1 rounded transition-all duration-200 hover:bg-red-700'
-                                  onClick={handleDelete}
-                                  onMouseEnter={(e) => {
-                                    const icon = e.target.querySelector('i');
-                                    icon.classList.remove('fa-regular');
-                                    icon.classList.add('fa-solid');
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    const icon = e.target.querySelector('i');
-                                    icon.classList.add('fa-regular');
-                                    icon.classList.remove('fa-solid');
-                                  }}
-                                >
-                                  <i
-                                    className="fa-regular fa-trash-can pr-2 py-1 text-lg"
-                                  />
-                                  Delete
-                                </span>
-                              </div>
-                            }
-                          </div>
-                          {/* job status  */}
-                          <FloatingLabel controlId="floatingSelectJobStatus" label="Job Status">
-                            <Form.Select
-                              aria-label="Floating label select job status"
-                              className='cursor-pointer'
-                              name='status'
-                              value={applicant?.status || "undefined"}
-                              onChange={handleApplicantChange}
-                            >
-                              <option disabled value="undefined" className='text-gray-400'>Enter Job Status</option>
-                              <option value="applied">Applied</option>
-                              <option value="interview">Interview</option>
-                              <option value="hired">Hired</option>
-                              <option value="rejected">Rejected</option>
-                            </Form.Select>
-                          </FloatingLabel>
-                          {
-                            isHired === true && (
-                              <div className="col-span-2">
-                                {/* selection date */}
-                                <FloatingLabel controlId="floatingPackage" label={
-                                  <>
-                                    <span>Enter Package Offered <span className='text-red-500'>*</span></span>
-                                  </>
-                                }>
-                                  <Form.Control
-                                    type="number"
-                                    step={0.01}
-                                    placeholder="Enter Package Offered"
-                                    name='package'
-                                    value={applicant?.package}
-                                    onChange={handleApplicantChange}
-                                    required
-                                  />
-                                </FloatingLabel>
-                              </div>
-                            )
-                          }
-                        </div>
-                        <div className="mb-2 mt-3">
-                          <Button variant="primary" onClick={handleSubmit}>
-                            <i className="fa-solid fa-floppy-disk pr-2" />
-                            Update
-                          </Button>
-                        </div>
-                      </div>
-                    </Accordion.Body>
-                  </Accordion.Item>
-                </Accordion>
+              <div className="space-y-4 text-xs">
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/60 space-y-2">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Student Applicant</span>
+                  <p className="font-extrabold text-slate-900 text-base">
+                    {currentUser.first_name} {currentUser.middle_name || ''} {currentUser.last_name}
+                  </p>
+                  <p className="text-slate-600 font-medium">{currentUser.email} • {currentUser.number}</p>
+                  {currentUser.uin && <p className="text-amber-600 font-bold">UIN: {currentUser.uin}</p>}
+                </div>
+
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/60 space-y-2">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Recruitment Drive</span>
+                  <p className="font-extrabold text-slate-900 text-base">{company?.companyName || 'Corporate Employer'}</p>
+                  <p className="text-amber-600 font-bold">{data?.jobTitle}</p>
+                </div>
               </div>
             </div>
-          </>
-        )
-      }
+          </div>
 
-      {/* ModalBox Component for Delete Confirmation */}
+          {/* Card 2: Status & Round Progress */}
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 sm:p-8 space-y-6 flex flex-col justify-between">
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200/80 flex items-center justify-center text-lg">
+                  <FaCheckCircle />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight">2. Round Progress & Offer Letter</h3>
+                  <p className="text-xs text-slate-500">Update current stage, selection date, and offer letter</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {/* Current Round & Status */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Current Round</label>
+                    <select
+                      name="currentRound"
+                      value={applicant?.currentRound || "undefined"}
+                      onChange={handleApplicantChange}
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    >
+                      <option disabled value="undefined">Select Round</option>
+                      <option value="Aptitude Test">Aptitude Test</option>
+                      <option value="Technical Interview">Technical Interview</option>
+                      <option value="HR Interview">HR Interview</option>
+                      <option value="Group Discussion">Group Discussion</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Round Status</label>
+                    <select
+                      name="roundStatus"
+                      value={applicant?.roundStatus || "undefined"}
+                      onChange={handleApplicantChange}
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    >
+                      <option disabled value="undefined">Select Status</option>
+                      <option value="pending">Pending</option>
+                      <option value="passed">Passed</option>
+                      <option value="failed">Failed</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Selection & Joining Dates */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Selection Date</label>
+                    <input
+                      type="date"
+                      name="selectionDate"
+                      value={formatDate(applicant?.selectionDate)}
+                      onChange={handleApplicantChange}
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Joining Date</label>
+                    <input
+                      type="date"
+                      name="joiningDate"
+                      value={formatDate(applicant?.joiningDate)}
+                      onChange={handleApplicantChange}
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Overall Job Status */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Overall Application Status</label>
+                  <select
+                    name="status"
+                    value={applicant?.status || "undefined"}
+                    onChange={handleApplicantChange}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-extrabold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  >
+                    <option disabled value="undefined">Select Application Status</option>
+                    <option value="applied">Applied</option>
+                    <option value="interview">Interview</option>
+                    <option value="hired">Hired</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                </div>
+
+                {/* Package Input if Hired */}
+                {isHired && (
+                  <div className="space-y-1.5 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl">
+                    <label className="text-xs font-extrabold text-emerald-900 block uppercase tracking-wider">
+                      Package Offered (LPA) <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="e.g. 12.5"
+                      name="package"
+                      required
+                      value={applicant?.package || ''}
+                      onChange={handleApplicantChange}
+                      className="w-full px-4 py-2.5 bg-white border border-emerald-300 rounded-xl text-sm font-black text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                )}
+
+                {/* Offer Letter Upload & Preview */}
+                <div className="pt-2 space-y-3">
+                  <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Offer Letter Document</label>
+                  <UploadOfferLetter jobId={jobId} fetchJobDetailsOfApplicant={fetchJobDetailsOfApplicant} />
+
+                  {applicant?.offerLetter && (
+                    <div className="flex items-center gap-3 pt-2">
+                      <a
+                        href={BASE_URL + applicant.offerLetter}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl no-underline transition-all shadow-2xs"
+                      >
+                        <FaEye /> View Offer Letter
+                      </a>
+                      <button
+                        type="button"
+                        onClick={handleDelete}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold text-xs rounded-xl transition-all cursor-pointer"
+                      >
+                        <FaTrashAlt /> Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Submit Action Button */}
+        <div className="flex justify-center items-center">
+          <button
+            type="submit"
+            disabled={saving}
+            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-700 text-white font-extrabold text-sm rounded-2xl shadow-xl shadow-amber-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer disabled:opacity-50"
+          >
+            {saving ? (
+              <div className="w-5 h-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+            ) : (
+              <FaSave className="text-base" />
+            )}
+            <span>{saving ? 'Updating Status...' : 'Save & Update Application Status'}</span>
+          </button>
+        </div>
+      </form>
+
       <ModalBox
         show={showModal}
         close={closeModal}
-        header={"Confirmation"}
-        body={`Do you want to delete offer letter?`}
-        btn={"Delete"}
+        header="Confirm Offer Letter Deletion"
+        body="Are you sure you want to delete your uploaded offer letter?"
+        btn="Delete Document"
         confirmAction={confirmDelete}
       />
-    </>
-  )
+    </div>
+  );
 }
 
-export default UpdateJobStatus
+export default UpdateJobStatus;

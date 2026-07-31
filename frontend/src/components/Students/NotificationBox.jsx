@@ -1,116 +1,79 @@
 import React, { useState, useEffect } from 'react';
-import Badge from 'react-bootstrap/Badge';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { FaBell, FaArrowRight, FaBriefcase } from 'react-icons/fa';
+
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 function NotificationBox() {
   const [loading, setLoading] = useState(true);
-
   const [jobs, setJobs] = useState([]);
-  const [currentUser, setCurrentUser] = useState({});
-
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`${BASE_URL}/user/detail`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          }
-        });
-        setCurrentUser({ role: response.data.role });
-      } catch (error) {
-        console.log("Error fetching user details => ", error);
-      }
-    };
-
-    fetchCurrentUser();
-  }, []);
 
   useEffect(() => {
     fetchJobs();
-  }, [currentUser?.role]);
+  }, []);
 
   const fetchJobs = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/tpo/jobs`);
-      // console.log(response.data.data)
-      // retriving lastest post
-      setJobs(response.data.data.sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt)).slice(0, 10));
+      const sorted = (response.data.data || []).sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt)).slice(0, 8);
+      setJobs(sorted);
     } catch (error) {
-      console.log('Error while fetching notices => ', error);
+      console.error('Error while fetching job notifications:', error);
     } finally {
       setLoading(false);
     }
   };
 
-
   return (
-    <>
-      <div className="my-2 mx-2 w-full backdrop-blur-md bg-white/30 border border-white/20 rounded-lg py-2 px-3 shadow shadow-red-400">
-        <div className="flex justify-between items-center">
-          <h3 className="font-semibold my-2">Notification</h3>
-          {/* <span className=''>
-            {
-              currentUser?.role === 'student' && (
-                <Link to='/student/all-notice' className='no-underline text-blue-500 hover:text-blue-700'>
-                  View All
-                </Link>
-              )
-            }
-            {
-              currentUser?.role === 'tpo_admin' && (
-                <Link to='/tpo/all-notice' className='no-underline text-blue-500 hover:text-blue-700'>
-                  View All
-                </Link>
-              )
-            }
-            {
-              currentUser?.role === 'management_admin' && (
-                <Link to='/management/all-notice' className='no-underline text-blue-500 hover:text-blue-700'>
-                  View All
-                </Link>
-              )
-            }
-          </span> */}
+    <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 flex flex-col justify-between space-y-4">
+      <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center text-sm">
+            <FaBell />
+          </div>
+          <h4 className="text-base font-bold text-slate-900 tracking-tight">Recent Drive Alerts</h4>
         </div>
-        {loading ? (
-          <div className="flex justify-center items-center">
-            <i className="fa-solid fa-spinner fa-spin text-2xl" />
-          </div>
-        ) : (
-          <div className="relative h-72 overflow-hidden">
-            {/* Wrapping the notices in a div that handles the animation */}
-            <div className="absolute bottom-0 w-full h-full animate-scrollUp">
-              {jobs?.length > 0 ? (
-                jobs.map((job, index) => (
-                  <div key={index} className="py-2 h-fit">
-                    <Link
-                      className='text-blue-500 hover:text-blue-700'
-                      to={`/student/job/${job?._id}`}
-                      target="_blank"
-                    >
-                      {job?.jobTitle}
-                      {/* Calculate the time difference in days and conditionally show the badge */}
-                      {(new Date() - new Date(job?.postedAt)) / (1000 * 60 * 60 * 24) <= 2 && (
-                        <Badge className="mx-2" bg="primary">New</Badge>
-                      )}
-                    </Link>
-                    <span className='no-underline mx-1 text-gray-400'>
-                      {new Date(job?.postedAt).toLocaleDateString('en-IN') + " " + new Date(job?.postedAt).toLocaleTimeString('en-IN')}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <div>No notices found!</div>
-              )}
-            </div>
-          </div>
-        )}
+        <Link to="/student/job-listings" className="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1 no-underline">
+          View All <FaArrowRight className="text-[10px]" />
+        </Link>
       </div>
-    </>
-  )
+
+      {loading ? (
+        <div className="flex justify-center items-center py-10">
+          <div className="w-6 h-6 rounded-full border-2 border-amber-600 border-t-transparent animate-spin" />
+        </div>
+      ) : (
+        <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+          {jobs.length > 0 ? (
+            jobs.map((job, index) => {
+              const isNew = (new Date() - new Date(job.postedAt)) / (1000 * 60 * 60 * 24) <= 2;
+              return (
+                <div key={index} className="flex items-center justify-between p-3 rounded-2xl border border-slate-100 hover:bg-slate-50 transition-colors">
+                  <Link
+                    to={`/student/job/${job._id}`}
+                    className="no-underline text-slate-900 font-bold text-xs truncate max-w-xs hover:text-amber-600 flex items-center gap-2"
+                  >
+                    <span className="truncate">{job.jobTitle}</span>
+                    {isNew && (
+                      <span className="bg-amber-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase shrink-0">
+                        New
+                      </span>
+                    )}
+                  </Link>
+                  <span className="text-[10px] font-medium text-slate-400 shrink-0">
+                    {new Date(job.postedAt).toLocaleDateString('en-IN')}
+                  </span>
+                </div>
+              );
+            })
+          ) : (
+            <div className="text-center py-8 text-xs text-slate-400 font-medium">No job notifications found.</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
-export default NotificationBox
+export default NotificationBox;

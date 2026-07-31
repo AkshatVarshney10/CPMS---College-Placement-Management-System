@@ -1,73 +1,86 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import Button from 'react-bootstrap/Button';
-import FloatingLabel from 'react-bootstrap/FloatingLabel';
-import Form from 'react-bootstrap/Form';
-import Col from 'react-bootstrap/Col';
-import Image from 'react-bootstrap/Image';
+import { 
+  FaUser, FaEnvelope, FaPhone, FaIdCard, FaGraduationCap, 
+  FaBookOpen, FaAward, FaFilePdf, FaSave, FaExclamationTriangle,
+  FaCheckCircle, FaCheck, FaExclamationCircle
+} from 'react-icons/fa';
 import Toast from '../Toast';
 import UploadResume from './UploadResume';
-const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import SkeletonLoader from '../SkeletonLoader';
 
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 function UpdatePlacementProfile() {
   document.title = 'CPMS | Placement Profile';
 
-  // userData to store user data get from userId
   const [userData, setUserData] = useState(null);
-
-
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-
+  const [cgpa, setCgpa] = useState(0);
 
   const fetchCurrentUserData = async () => {
     try {
+      setLoading(true);
       const token = localStorage.getItem('token');
+      if (!token) return;
+
       const response = await axios.get(`${BASE_URL}/user/detail`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
       setUserData(response.data);
-      // console.log(userData);
-      // console.log("resss", response.data);
-
-      setLoading(false);
     } catch (error) {
-      console.log("Account.jsx => ", error);
+      console.error("Error fetching user detail:", error);
+      setToastMessage("Failed to load user profile");
+      setShowToast(true);
+    } finally {
       setLoading(false);
     }
-  }
-
+  };
 
   useEffect(() => {
     fetchCurrentUserData();
-    calcCGPA();
-  }, [loading]);
+  }, []);
 
-  // console.log(userData)
+  useEffect(() => {
+    if (userData?.studentProfile?.SGPA) {
+      calcCGPA();
+    }
+  }, [userData]);
 
   const handleDataChangeForSGPA = (e) => {
-    setUserData({
-      ...userData,
+    setUserData(prev => ({
+      ...prev,
       studentProfile: {
-        ...userData?.studentProfile,
+        ...prev?.studentProfile,
         SGPA: {
-          ...userData?.studentProfile?.SGPA,
+          ...prev?.studentProfile?.SGPA,
           [e.target.name]: e.target.value
         }
       }
-    });
-    calcCGPA();
-  }
+    }));
+  };
 
+  const calcCGPA = () => {
+    let sum = 0, sem = 0;
+    const sgpa = userData?.studentProfile?.SGPA || {};
+    ['sem1', 'sem2', 'sem3', 'sem4', 'sem5', 'sem6', 'sem7', 'sem8'].forEach(s => {
+      const val = Number(sgpa[s]);
+      if (val && val > 0) {
+        sum += val;
+        sem += 1;
+      }
+    });
+    const calculated = sem > 0 ? (sum / sem).toFixed(2) : 0;
+    setCgpa(calculated);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
+      setSaving(true);
       const token = localStorage.getItem('token');
 
       const updatedUserData = {
@@ -80,617 +93,531 @@ function UpdatePlacementProfile() {
 
       const response = await axios.post(`${BASE_URL}/user/update-profile`,
         updatedUserData,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      if (response.data) {
-        if (response.data.msg) {
-          setToastMessage(response.data.msg);
-          setShowToast(true);
-        }
+
+      if (response.data?.msg) {
+        setToastMessage(response.data.msg);
+        setShowToast(true);
+      } else {
+        setToastMessage("Profile updated successfully!");
+        setShowToast(true);
       }
     } catch (error) {
-      console.log("UserDetails => ", error);
+      console.error("Error updating profile:", error);
+      setToastMessage(error.response?.data?.msg || "Failed to update profile");
+      setShowToast(true);
+    } finally {
+      setSaving(false);
     }
+  };
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto space-y-6 pb-12">
+        <SkeletonLoader type="card" count={3} />
+      </div>
+    );
   }
 
-  // console.log(userData);
-
-  const [cgpa, setCgpa] = useState(0);
-
-  const calcCGPA = () => {
-    let sum = 0, sem = 0;
-    if (userData?.studentProfile?.SGPA?.sem1 !== '0' || 0) {
-      sum += Number(userData?.studentProfile?.SGPA?.sem1);
-      sem += 1;
-    }
-    if (userData?.studentProfile?.SGPA?.sem2 !== '0' || 0) {
-      sum += Number(userData?.studentProfile?.SGPA?.sem2);
-      sem += 1;
-    }
-    if (userData?.studentProfile?.SGPA?.sem3 !== '0' || 0) {
-      sum += Number(userData?.studentProfile?.SGPA?.sem3);
-      sem += 1;
-    }
-    if (userData?.studentProfile?.SGPA?.sem4 !== '0' || 0) {
-      sum += Number(userData?.studentProfile?.SGPA?.sem4);
-      sem += 1;
-    }
-    if (userData?.studentProfile?.SGPA?.sem5 !== '0' || 0) {
-      sum += Number(userData?.studentProfile?.SGPA?.sem5);
-      sem += 1;
-    }
-    if (userData?.studentProfile?.SGPA?.sem6 !== '0' || 0) {
-      sum += Number(userData?.studentProfile?.SGPA?.sem6);
-      sem += 1;
-    }
-    if (userData?.studentProfile?.SGPA?.sem7 !== '0' || 0) {
-      sum += Number(userData?.studentProfile?.SGPA?.sem7);
-      sem += 1;
-    }
-    if (userData?.studentProfile?.SGPA?.sem8 !== '0' || 0) {
-      sum += Number(userData?.studentProfile?.SGPA?.sem8);
-      sem += 1;
-    }
-    setCgpa((sum / sem).toFixed(2));
-  }
+  const studentProfile = userData?.studentProfile || {};
 
   return (
-    <>
-      {
-        loading ? (
-          <div className="flex justify-center h-72 items-center">
-            <i className="fa-solid fa-spinner fa-spin text-3xl" />
+    <div className="max-w-7xl mx-auto space-y-8 pb-16">
+      <Toast
+        show={showToast}
+        onClose={() => setShowToast(false)}
+        message={toastMessage}
+        delay={3000}
+        position="bottom-end"
+      />
+
+      {/* Header Title Banner */}
+      <div className="relative rounded-3xl bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 p-8 sm:p-10 border border-slate-800 shadow-2xl overflow-hidden text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-amber-500 to-orange-500" />
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 text-xs font-semibold border border-amber-500/30">
+            <FaUser className="text-xs" /> Placement Profile Ledger
           </div>
-        ) : (
-          <>
-            {/*  any message here  */}
-            < Toast
-              show={showToast}
-              onClose={() => setShowToast(false)}
-              message={toastMessage}
-              delay={3000}
-              position="bottom-end"
-            />
+          <h2 className="text-3xl font-extrabold tracking-tight">Student Placement Profile</h2>
+          <p className="text-slate-400 text-xs sm:text-sm max-w-xl">
+            Keep your academic performance, semester SGPA, past qualifications, and resume updated for drive eligibility checks.
+          </p>
+        </div>
+        {cgpa > 0 && (
+          <div className="px-5 py-3 bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl shadow-lg shadow-amber-500/20 text-center shrink-0">
+            <span className="block text-2xl font-black text-white">{cgpa}</span>
+            <span className="text-[11px] text-amber-100 font-bold uppercase tracking-wider">Calculated CGPA</span>
+          </div>
+        )}
+      </div>
 
-
-            <div className=''>
-              <form onSubmit={handleSubmit}>
-                <div className="grid grid-cols-2 gap-4 my-4 text-base max-sm:text-sm">
-                  {/* basic info  */}
-                  <div className="grid backdrop-blur-md bg-white/30 border border-white/20 rounded-lg shadow shadow-red-400 p-6 max-md:col-span-2">
-                    <span className='text-2xl max-sm:text-xl'>Basic Details</span>
-                    <div className="flex flex-col justify-between py-2">
-                      {/* Basic Info */}
-                      <div className="flex justify-between">
-                        <div className="space-y-4">
-                          <div>
-                            <span className="text-gray-700 font-bold">Full Name: </span>
-                            <span className="text-gray-800">
-                              {userData?.first_name + " "}
-                              {userData?.middle_name && userData?.middle_name + " "}
-                              {userData?.last_name}
-                            </span>
-                          </div>
-
-                          <div>
-                            <span className="text-gray-700 font-bold">Email: </span>
-                            <span className="text-gray-800">
-                              {userData?.email}
-                            </span>
-                          </div>
-
-                          <div>
-                            <span className="text-gray-700 font-bold">Number: </span>
-                            <span className="text-gray-800">
-                              {userData?.number}
-                            </span>
-                          </div>
-
-                          {userData?.studentProfile?.uin && (
-                            <div>
-                              <span className="text-gray-700 font-bold">UIN: </span>
-                              <span className="text-gray-800">
-                                {userData?.studentProfile?.uin}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Profile Picture */}
-                        <Col xs={5} md={4} className="flex justify-end items-start rounded">
-                          <Image src={userData?.profile} thumbnail />
-                        </Col>
-                      </div>
-                      <div className="flex items-center">
-                        {/* resume upload  */}
-                        <UploadResume fetchCurrentUserData={fetchCurrentUserData} /> {/* passing function to update userData */}
-                        {(userData?.studentProfile?.resume !== "undefined") && (
-                          <div className="py-2 px-2">
-                            <span className='bg-blue-500 py-1 pr-2 rounded cursor-pointer hover:bg-blue-700'>
-                              <a href={userData?.studentProfile?.resume} target='_blanck' className='no-underline text-white'>
-                                <i className="fa-regular fa-eye px-2" />
-                                View Resume
-                              </a>
-                            </span>
-                            <p className='text-sm text-gray-500 mt-1'>{userData?.studentProfile?.resume?.filename}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* college info  */}
-                  <div className="backdrop-blur-md bg-white/30 border border-white/20 rounded-lg shadow shadow-red-400 p-6 max-md:col-span-2">
-                    <span className='text-2xl max-sm:text-xl'>College Information</span>
-                    <div className="grid grid-cols-2">
-                      {/* semester sgpa  */}
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className=" py-3 flex flex-wrap gap-2">
-                          <FloatingLabel controlId="floatingSem1" label="Sem 1">
-                            <Form.Control
-                              type="number"
-                              placeholder="Sem 1"
-                              name='sem1'
-                              step="0.01"
-                              value={userData?.studentProfile?.SGPA?.sem1}
-                              onChange={handleDataChangeForSGPA}
-                            />
-                          </FloatingLabel>
-                          <FloatingLabel controlId="floatingSem2" label="Sem 2">
-                            <Form.Control
-                              type="number"
-                              placeholder="Sem 2"
-                              name='sem2'
-                              step="0.01"
-                              value={userData?.studentProfile?.SGPA?.sem2}
-                              onChange={handleDataChangeForSGPA}
-                            />
-                          </FloatingLabel>
-                          <FloatingLabel controlId="floatingSem3" label="Sem 3">
-                            <Form.Control
-                              type="number"
-                              placeholder="Sem 3"
-                              name='sem3'
-                              step="0.01"
-                              value={userData?.studentProfile?.SGPA?.sem3}
-                              onChange={handleDataChangeForSGPA}
-                            />
-                          </FloatingLabel>
-                          <FloatingLabel controlId="floatingSem4" label="Sem 4">
-                            <Form.Control
-                              type="number"
-                              placeholder="Sem 4"
-                              name='sem4'
-                              step="0.01"
-                              value={userData?.studentProfile?.SGPA?.sem4}
-                              onChange={handleDataChangeForSGPA}
-                            />
-                          </FloatingLabel>
-                        </div>
-                        <div className=" py-3 flex flex-wrap gap-2">
-                          <FloatingLabel controlId="floatingSem5" label="Sem 5">
-                            <Form.Control
-                              type="number"
-                              placeholder="Sem 5"
-                              name='sem5'
-                              step="0.01"
-                              value={userData?.studentProfile?.SGPA?.sem5}
-                              onChange={handleDataChangeForSGPA}
-                            />
-                          </FloatingLabel>
-                          <FloatingLabel controlId="floatingSem6" label="Sem 6">
-                            <Form.Control
-                              type="number"
-                              placeholder="Sem 6"
-                              name='sem6'
-                              step="0.01"
-                              value={userData?.studentProfile?.SGPA?.sem6}
-                              onChange={handleDataChangeForSGPA}
-                            />
-                          </FloatingLabel>
-                          <FloatingLabel controlId="floatingSem7" label="Sem 7">
-                            <Form.Control
-                              type="number"
-                              placeholder="Sem 7"
-                              name='sem7'
-                              step="0.01"
-                              value={userData?.studentProfile?.SGPA?.sem7}
-                              onChange={handleDataChangeForSGPA}
-                            />
-                          </FloatingLabel>
-                          <FloatingLabel controlId="floatingSem8" label="Sem 8">
-                            <Form.Control
-                              type="number"
-                              placeholder="Sem 8"
-                              name='sem8'
-                              step="0.01"
-                              value={userData?.studentProfile?.SGPA?.sem8}
-                              onChange={handleDataChangeForSGPA}
-                            />
-                          </FloatingLabel>
-                        </div>
-                      </div>
-
-                      {/* current year, live kt and any gap  */}
-                      {/* current year, graduation year, live kt, gap, NOC */}
-                      <div className="px-2 py-3 flex flex-col gap-3">
-                        <FloatingLabel controlId="floatingSelectYear" label="Current Year">
-                          <Form.Select
-                            aria-label="Floating label select year"
-                            className='cursor-pointer'
-                            name='year'
-                            value={userData?.studentProfile?.year || "undefined"}
-                            onChange={(e) => {
-                              setUserData({
-                                ...userData,
-                                studentProfile: {
-                                  ...userData?.studentProfile,
-                                  year: parseInt(e.target.value) || undefined
-                                }
-                              });
-                            }}
-                          >
-                            <option disabled value="undefined" className='text-gray-400'>Enter Current Year</option>
-                            <option value="1">1st</option>
-                            <option value="2">2nd</option>
-                            <option value="3">3rd</option>
-                            <option value="4">4th</option>
-                          </Form.Select>
-                        </FloatingLabel>
-                        <FloatingLabel controlId="floatingGraduationYear" label="Graduation Year">
-                          <Form.Select
-                            aria-label="Floating label select graduation year"
-                            className='cursor-pointer'
-                            name='graduationYear'
-                            value={userData?.studentProfile?.graduationYear || "undefined"}
-                            onChange={(e) => {
-                              setUserData({
-                                ...userData,
-                                studentProfile: {
-                                  ...userData?.studentProfile,
-                                  graduationYear: parseInt(e.target.value) || undefined
-                                }
-                              });
-                            }}
-                          >
-                            <option disabled value="undefined" className='text-gray-400'>Enter Graduation Year</option>
-                            <option value="2027">2027</option>
-                            <option value="2028">2028</option>
-                            <option value="2029">2029</option>
-                            <option value="2030">2030</option>
-                          </Form.Select>
-                        </FloatingLabel>
-                        <FloatingLabel controlId="floatingLiveKT" label="Live KT's">
-                          <Form.Control
-                            type="number"
-                            placeholder="Live KT's"
-                            name='liveKT'
-                            value={userData?.studentProfile?.liveKT || 0}
-                            onChange={(e) => {
-                              setUserData({
-                                ...userData,
-                                studentProfile: {
-                                  ...userData?.studentProfile,
-                                  liveKT: parseInt(e.target.value) || 0
-                                }
-                              });
-                            }}
-                          />
-                        </FloatingLabel>
-                        <Form.Check
-                          type="switch"
-                          id="gap"
-                          checked={userData?.studentProfile?.gap === "true" || userData?.studentProfile?.gap === true}
-                          onChange={(e) => {
-                            setUserData({
-                              ...userData,
-                              studentProfile: {
-                                ...userData?.studentProfile,
-                                gap: e.target.checked
-                              }
-                            });
-                          }}
-                          name='gap'
-                          label="Any Gap"
-                        />
-                        <Form.Check
-                          type="switch"
-                          id="hasNOC"
-                          checked={userData?.studentProfile?.hasNOC === "true" || userData?.studentProfile?.hasNOC === true}
-                          onChange={(e) => {
-                            setUserData({
-                              ...userData,
-                              studentProfile: {
-                                ...userData?.studentProfile,
-                                hasNOC: e.target.checked
-                              }
-                            });
-                          }}
-                          name='hasNOC'
-                          label={
-                            <span>
-                              Has taken NOC (No Objection Certificate)
-                              {userData?.studentProfile?.hasNOC && <span className="text-red-500 font-bold block text-xs">WARNING: You will not be eligible to apply for any drives if NOC is taken.</span>}
-                            </span>
-                          }
-                        />
-                        {
-                          cgpa !== "NaN" &&
-                          <div className='mt-4 text-2xl text-green-500 font-bold'>
-                            <span className=''>CGPA: </span>
-                            <span className=''>
-                              {cgpa}
-                            </span>
-                          </div>
-                        }
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* past qualification  */}
-                  <div className="col-span-2 backdrop-blur-md bg-white/30 border border-white/20 rounded-lg shadow shadow-red-400 p-6">
-                    <span className='text-2xl max-sm:text-xl'>Past Qualification</span>
-                    <div className="grid grid-cols-3 max-sm:grid-cols-1">
-                      <div className="px-2 py-3 flex flex-col gap-2">
-                        <FloatingLabel controlId="floatingSelectSSC" label="SSC Board Name">
-                          <Form.Select
-                            aria-label="Floating label select SSCBoard"
-                            className='cursor-pointer'
-                            name='sscBoard'
-                            value={userData?.studentProfile?.pastQualification?.ssc?.board || "undefined"}
-                            onChange={(e) => {
-                              setUserData({
-                                ...userData,
-                                studentProfile: {
-                                  ...userData?.studentProfile,
-                                  pastQualification: {
-                                    ...userData?.studentProfile?.pastQualification,
-                                    ssc: {
-                                      ...userData?.studentProfile?.pastQualification?.ssc,
-                                      board: e.target.value
-                                    }
-                                  }
-                                }
-                              });
-                            }}
-                          >
-                            <option disabled value="undefined" className='text-gray-400'>Enter Your SSC Board Name</option>
-                            <option value="Maharashtra State Board of Secondary and Higher Secondary Education (MSBSHSE)">Maharashtra State Board of Secondary and Higher Secondary Education (MSBSHSE)</option>
-                            <option value="Central Board of Secondary Education (CBSE)">Central Board of Secondary Education (CBSE)</option>
-                            <option value="Council for the Indian School Certificate Examinations (CISCE)">Council for the Indian School Certificate Examinations (CISCE)</option>
-                            <option value="Other">Other</option>
-                          </Form.Select>
-                        </FloatingLabel>
-                        <FloatingLabel controlId="floatingSSCMarks" label="SSC Percentage">
-                          <Form.Control
-                            type="number"
-                            placeholder="SSC Percentage"
-                            name='sscPercentage'
-                            value={userData?.studentProfile?.pastQualification?.ssc?.percentage}
-                            onChange={(e) => {
-                              setUserData({
-                                ...userData,
-                                studentProfile: {
-                                  ...userData?.studentProfile,
-                                  pastQualification: {
-                                    ...userData?.studentProfile?.pastQualification,
-                                    ssc: {
-                                      ...userData?.studentProfile?.pastQualification?.ssc,
-                                      percentage: e.target.value
-                                    }
-                                  }
-                                }
-                              });
-                            }}
-                          />
-                        </FloatingLabel>
-                        <FloatingLabel controlId="floatingSelectSSCPassingYear" label="SSC Passing Year">
-                          <Form.Control
-                            type="number"
-                            placeholder="SSC Passing Year"
-                            name='sscPassingYear'
-                            value={userData?.studentProfile?.pastQualification?.ssc?.year}
-                            onChange={(e) => {
-                              setUserData({
-                                ...userData,
-                                studentProfile: {
-                                  ...userData?.studentProfile,
-                                  pastQualification: {
-                                    ...userData?.studentProfile?.pastQualification,
-                                    ssc: {
-                                      ...userData?.studentProfile?.pastQualification?.ssc,
-                                      year: e.target.value
-                                    }
-                                  }
-                                }
-                              });
-                            }}
-                          />
-                        </FloatingLabel>
-                      </div>
-
-                      <div className="px-2 py-3 flex flex-col gap-2">
-                        <FloatingLabel controlId="floatingSelectHSC" label="HSC Board Name">
-                          <Form.Select
-                            aria-label="Floating label select HSC Board"
-                            className='cursor-pointer'
-                            name='hscBoard'
-                            value={userData?.studentProfile?.pastQualification?.hsc?.board || "undefined"}
-                            onChange={(e) => {
-                              setUserData({
-                                ...userData,
-                                studentProfile: {
-                                  ...userData?.studentProfile,
-                                  pastQualification: {
-                                    ...userData?.studentProfile?.pastQualification,
-                                    hsc: {
-                                      ...userData?.studentProfile?.pastQualification?.hsc,
-                                      board: e.target.value
-                                    }
-                                  }
-                                }
-                              });
-                            }}
-                          >
-                            <option disabled value="undefined" className='text-gray-400'>Enter Your SSC Board Name</option>
-                            <option value="Maharashtra State Board of Secondary and Higher Secondary Education (MSBSHSE)">Maharashtra State Board of Secondary and Higher Secondary Education (MSBSHSE)</option>
-                            <option value="Central Board of Secondary Education (CBSE)">Central Board of Secondary Education (CBSE)</option>
-                            <option value="Council for the Indian School Certificate Examinations (CISCE)">Council for the Indian School Certificate Examinations (CISCE)</option>
-                            <option value="NoHSC">No HSC</option>
-                            <option value="Other">Other</option>
-                          </Form.Select>
-                        </FloatingLabel>
-                        <FloatingLabel controlId="floatingHSCMarks" label="HSC Percentage">
-                          <Form.Control
-                            type="number"
-                            placeholder="HSC Percentage"
-                            name='hscPercentage'
-                            value={userData?.studentProfile?.pastQualification?.hsc?.percentage || ""}
-                            onChange={(e) => {
-                              setUserData({
-                                ...userData,
-                                studentProfile: {
-                                  ...userData?.studentProfile,
-                                  pastQualification: {
-                                    ...userData?.studentProfile?.pastQualification,
-                                    hsc: {
-                                      ...userData?.studentProfile?.pastQualification?.hsc,
-                                      percentage: e.target.value
-                                    }
-                                  }
-                                }
-                              });
-                            }}
-                          />
-                        </FloatingLabel>
-                        <FloatingLabel controlId="floatingSelectHSCPassingYear" label="HSC Passing Year">
-                          <Form.Control
-                            type="number"
-                            placeholder="HSC Passing Year"
-                            name='hscPassingYear'
-                            value={userData?.studentProfile?.pastQualification?.hsc?.year || ""}
-                            onChange={(e) => {
-                              setUserData({
-                                ...userData,
-                                studentProfile: {
-                                  ...userData?.studentProfile,
-                                  pastQualification: {
-                                    ...userData?.studentProfile?.pastQualification,
-                                    hsc: {
-                                      ...userData?.studentProfile?.pastQualification?.hsc,
-                                      year: e.target.value
-                                    }
-                                  }
-                                }
-                              });
-                            }}
-                          />
-                        </FloatingLabel>
-                      </div>
-
-                      <div className="px-2 py-3 flex flex-col gap-2">
-                        <FloatingLabel controlId="floatingSelectDiploma" label="Diploma Board Name">
-                          <Form.Select
-                            aria-label="Floating label select Diploma Board"
-                            className='cursor-pointer'
-                            name='diplomaBoard'
-                            value={userData?.studentProfile?.pastQualification?.diploma?.board || "undefined"}
-                            onChange={(e) => {
-                              setUserData({
-                                ...userData,
-                                studentProfile: {
-                                  ...userData?.studentProfile,
-                                  pastQualification: {
-                                    ...userData?.studentProfile?.pastQualification,
-                                    diploma: {
-                                      ...userData?.studentProfile?.pastQualification?.diploma,
-                                      board: e.target.value
-                                    }
-                                  }
-                                }
-                              });
-                            }}
-                          >
-                            <option disabled value="undefined" className='text-gray-400'>Enter Your Diploma University Name</option>
-                            <option value="Mumbai University">Mumbai University</option>
-                            <option value="NoDiploma">No Diploma</option>
-                            <option value="Other">Other</option>
-                          </Form.Select>
-                        </FloatingLabel>
-                        <FloatingLabel controlId="floatingDiplomaMarks" label="Diploma CGPA">
-                          <Form.Control
-                            type="number"
-                            placeholder="Diploma Percentage"
-                            name='diplomaPercentage'
-                            value={userData?.studentProfile?.pastQualification?.diploma?.percentage || ""}
-                            onChange={(e) => {
-                              setUserData({
-                                ...userData,
-                                studentProfile: {
-                                  ...userData?.studentProfile,
-                                  pastQualification: {
-                                    ...userData?.studentProfile?.pastQualification,
-                                    diploma: {
-                                      ...userData?.studentProfile?.pastQualification?.diploma,
-                                      percentage: e.target.value
-                                    }
-                                  }
-                                }
-                              });
-                            }}
-                          />
-                        </FloatingLabel>
-                        <FloatingLabel controlId="floatingSelectDiplomaPassingYear" label="Diploma Passing Year">
-                          <Form.Control
-                            type="number"
-                            placeholder="Diploma Passing Year"
-                            name='diplomaPassingYear'
-                            value={userData?.studentProfile?.pastQualification?.diploma?.year || ""}
-                            onChange={(e) => {
-                              setUserData({
-                                ...userData,
-                                studentProfile: {
-                                  ...userData?.studentProfile,
-                                  pastQualification: {
-                                    ...userData?.studentProfile?.pastQualification,
-                                    diploma: {
-                                      ...userData?.studentProfile?.pastQualification?.diploma,
-                                      year: e.target.value
-                                    }
-                                  }
-                                }
-                              });
-                            }}
-                          />
-                        </FloatingLabel>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  className="flex flex-col justify-center items-center gap-2"
-                  onMouseOver={(e) => {
-                    e.target.querySelector('Button i').classList.add('fa-beat');
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.querySelector('Button i').classList.remove('fa-beat');
-                  }}
-                >
-                  <Button variant="primary" type='submit' size='lg'>
-                    <i className="fa-regular fa-floppy-disk mr-2" />
-                    Save
-                  </Button>
-                </div>
-              </form>
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {/* SECTION 1: Student Profile Card & Resume Upload */}
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 sm:p-8 space-y-6">
+          <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+            <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200/80 flex items-center justify-center text-lg">
+              <FaUser />
             </div>
-          </>
-        )
-      }
-    </>
-  )
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 tracking-tight">Section 1: Student Profile & Resume</h3>
+              <p className="text-xs text-slate-500">Personal details and resume document management</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Student Info Card */}
+            <div className="lg:col-span-2 bg-slate-50/70 border border-slate-200/80 rounded-2xl p-6 space-y-4">
+              <div className="flex items-center gap-4 border-b border-slate-200/60 pb-4">
+                <div className="w-16 h-16 rounded-2xl bg-slate-900 text-amber-400 flex items-center justify-center font-extrabold text-xl overflow-hidden border-2 border-amber-500">
+                  {userData?.profile ? (
+                    <img src={userData.profile} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <span>{userData?.first_name?.charAt(0) || 'S'}</span>
+                  )}
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-slate-900 text-lg">
+                    {userData?.first_name} {userData?.middle_name || ''} {userData?.last_name}
+                  </h4>
+                  <p className="text-xs font-bold text-amber-600 uppercase tracking-wider">
+                    {studentProfile.uin ? `UIN: ${studentProfile.uin}` : 'Student Account'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200/60">
+                  <FaEnvelope className="text-amber-500 text-base" />
+                  <div>
+                    <span className="text-slate-400 font-bold block text-[10px] uppercase">Email Address</span>
+                    <span className="font-bold text-slate-900">{userData?.email || 'N/A'}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200/60">
+                  <FaPhone className="text-amber-500 text-base" />
+                  <div>
+                    <span className="text-slate-400 font-bold block text-[10px] uppercase">Contact Number</span>
+                    <span className="font-bold text-slate-900">{userData?.number || 'N/A'}</span>
+                  </div>
+                </div>
+
+                {studentProfile.uin && (
+                  <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200/60 sm:col-span-2">
+                    <FaIdCard className="text-amber-500 text-base" />
+                    <div>
+                      <span className="text-slate-400 font-bold block text-[10px] uppercase">University Identification Number (UIN)</span>
+                      <span className="font-mono font-bold text-slate-900">{studentProfile.uin}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Resume Upload Box */}
+            <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-6 space-y-4 flex flex-col justify-between">
+              <div className="space-y-2">
+                <h4 className="font-bold text-slate-900 text-sm">Resume Document</h4>
+                <p className="text-xs text-slate-500">Upload your latest PDF/DOC resume for TPO evaluation</p>
+              </div>
+
+              <UploadResume fetchCurrentUserData={fetchCurrentUserData} />
+
+              {studentProfile.resume && studentProfile.resume !== "undefined" && (
+                <div className="pt-2 border-t border-slate-200/60">
+                  <a
+                    href={studentProfile.resume}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-2xs no-underline transition-all"
+                  >
+                    <FaFilePdf className="text-amber-400" />
+                    <span>View Current Resume</span>
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 2: Academic Information */}
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 sm:p-8 space-y-6">
+          <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+            <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200/80 flex items-center justify-center text-lg">
+              <FaGraduationCap />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 tracking-tight">Section 2: Academic Information & Semester SGPAs</h3>
+              <p className="text-xs text-slate-500">Current year, graduation year, Live KT, NOC status, and semester grades</p>
+            </div>
+          </div>
+
+          {/* Academic Selectors & Switches */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Current Year */}
+            <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 space-y-2">
+              <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Current Year</label>
+              <select
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                value={studentProfile.year || "undefined"}
+                onChange={(e) => setUserData({
+                  ...userData,
+                  studentProfile: { ...studentProfile, year: parseInt(e.target.value) || undefined }
+                })}
+              >
+                <option disabled value="undefined">Select Year</option>
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+                <option value="4">4th Year</option>
+              </select>
+            </div>
+
+            {/* Graduation Year */}
+            <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 space-y-2">
+              <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Graduation Year</label>
+              <select
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                value={studentProfile.graduationYear || "undefined"}
+                onChange={(e) => setUserData({
+                  ...userData,
+                  studentProfile: { ...studentProfile, graduationYear: parseInt(e.target.value) || undefined }
+                })}
+              >
+                <option disabled value="undefined">Select Year</option>
+                <option value="2027">2027</option>
+                <option value="2028">2028</option>
+                <option value="2029">2029</option>
+                <option value="2030">2030</option>
+              </select>
+            </div>
+
+            {/* Live KTs */}
+            <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 space-y-2">
+              <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Live KT's</label>
+              <input
+                type="number"
+                min="0"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                value={studentProfile.liveKT || 0}
+                onChange={(e) => setUserData({
+                  ...userData,
+                  studentProfile: { ...studentProfile, liveKT: parseInt(e.target.value) || 0 }
+                })}
+              />
+            </div>
+
+            {/* Gap & NOC Switches */}
+            <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 space-y-3 flex flex-col justify-center">
+              <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-800">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-amber-600 rounded border-slate-300 focus:ring-amber-500"
+                  checked={studentProfile.gap === "true" || studentProfile.gap === true}
+                  onChange={(e) => setUserData({
+                    ...userData,
+                    studentProfile: { ...studentProfile, gap: e.target.checked }
+                  })}
+                />
+                <span>Academic Gap Year</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-800">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-amber-600 rounded border-slate-300 focus:ring-amber-500"
+                  checked={studentProfile.hasNOC === "true" || studentProfile.hasNOC === true}
+                  onChange={(e) => setUserData({
+                    ...userData,
+                    studentProfile: { ...studentProfile, hasNOC: e.target.checked }
+                  })}
+                />
+                <span>Taken NOC</span>
+              </label>
+            </div>
+          </div>
+
+          {studentProfile.hasNOC && (
+            <div className="bg-rose-50 border border-rose-200 text-rose-800 p-4 rounded-2xl text-xs font-bold flex items-center gap-2">
+              <FaExclamationTriangle className="text-rose-600 text-sm shrink-0" />
+              <span>WARNING: Taking an NOC will make you ineligible to apply for placement drives.</span>
+            </div>
+          )}
+
+          {/* 4x2 Semester SGPA Cards Grid */}
+          <div className="space-y-3">
+            <h4 className="font-bold text-slate-900 text-sm">Semester SGPA Matrix (Sem 1 — Sem 8)</h4>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map(semNum => {
+                const fieldName = `sem${semNum}`;
+                const val = studentProfile.SGPA?.[fieldName] || '';
+                return (
+                  <div key={semNum} className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 space-y-1 hover:border-amber-400 transition-colors">
+                    <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider block">
+                      Semester {semNum}
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="10"
+                      placeholder="0.00"
+                      name={fieldName}
+                      value={val}
+                      onChange={handleDataChangeForSGPA}
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 3: Past Qualifications */}
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 sm:p-8 space-y-6">
+          <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+            <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200/80 flex items-center justify-center text-lg">
+              <FaAward />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 tracking-tight">Section 3: Past Educational Qualifications</h3>
+              <p className="text-xs text-slate-500">Board details, percentages, and passing years for 10th (SSC), 12th (HSC), and Diploma</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* SSC Card */}
+            <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-5 space-y-4">
+              <h4 className="font-extrabold text-slate-900 text-sm border-b border-slate-200/60 pb-2">SSC (10th Standard)</h4>
+              
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">SSC Board</label>
+                <select
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  value={studentProfile.pastQualification?.ssc?.board || "undefined"}
+                  onChange={(e) => setUserData({
+                    ...userData,
+                    studentProfile: {
+                      ...studentProfile,
+                      pastQualification: {
+                        ...studentProfile.pastQualification,
+                        ssc: { ...studentProfile.pastQualification?.ssc, board: e.target.value }
+                      }
+                    }
+                  })}
+                >
+                  <option disabled value="undefined">Select Board</option>
+                  <option value="Maharashtra State Board of Secondary and Higher Secondary Education (MSBSHSE)">MSBSHSE</option>
+                  <option value="Central Board of Secondary Education (CBSE)">CBSE</option>
+                  <option value="Council for the Indian School Certificate Examinations (CISCE)">CISCE</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Percentage (%)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="e.g. 85.5"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  value={studentProfile.pastQualification?.ssc?.percentage || ''}
+                  onChange={(e) => setUserData({
+                    ...userData,
+                    studentProfile: {
+                      ...studentProfile,
+                      pastQualification: {
+                        ...studentProfile.pastQualification,
+                        ssc: { ...studentProfile.pastQualification?.ssc, percentage: e.target.value }
+                      }
+                    }
+                  })}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Passing Year</label>
+                <input
+                  type="number"
+                  placeholder="e.g. 2021"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  value={studentProfile.pastQualification?.ssc?.year || ''}
+                  onChange={(e) => setUserData({
+                    ...userData,
+                    studentProfile: {
+                      ...studentProfile,
+                      pastQualification: {
+                        ...studentProfile.pastQualification,
+                        ssc: { ...studentProfile.pastQualification?.ssc, year: e.target.value }
+                      }
+                    }
+                  })}
+                />
+              </div>
+            </div>
+
+            {/* HSC Card */}
+            <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-5 space-y-4">
+              <h4 className="font-extrabold text-slate-900 text-sm border-b border-slate-200/60 pb-2">HSC (12th Standard)</h4>
+              
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">HSC Board</label>
+                <select
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  value={studentProfile.pastQualification?.hsc?.board || "undefined"}
+                  onChange={(e) => setUserData({
+                    ...userData,
+                    studentProfile: {
+                      ...studentProfile,
+                      pastQualification: {
+                        ...studentProfile.pastQualification,
+                        hsc: { ...studentProfile.pastQualification?.hsc, board: e.target.value }
+                      }
+                    }
+                  })}
+                >
+                  <option disabled value="undefined">Select Board</option>
+                  <option value="Maharashtra State Board of Secondary and Higher Secondary Education (MSBSHSE)">MSBSHSE</option>
+                  <option value="Central Board of Secondary Education (CBSE)">CBSE</option>
+                  <option value="Council for the Indian School Certificate Examinations (CISCE)">CISCE</option>
+                  <option value="NoHSC">No HSC</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Percentage (%)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="e.g. 82.0"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  value={studentProfile.pastQualification?.hsc?.percentage || ''}
+                  onChange={(e) => setUserData({
+                    ...userData,
+                    studentProfile: {
+                      ...studentProfile,
+                      pastQualification: {
+                        ...studentProfile.pastQualification,
+                        hsc: { ...studentProfile.pastQualification?.hsc, percentage: e.target.value }
+                      }
+                    }
+                  })}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Passing Year</label>
+                <input
+                  type="number"
+                  placeholder="e.g. 2023"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  value={studentProfile.pastQualification?.hsc?.year || ''}
+                  onChange={(e) => setUserData({
+                    ...userData,
+                    studentProfile: {
+                      ...studentProfile,
+                      pastQualification: {
+                        ...studentProfile.pastQualification,
+                        hsc: { ...studentProfile.pastQualification?.hsc, year: e.target.value }
+                      }
+                    }
+                  })}
+                />
+              </div>
+            </div>
+
+            {/* Diploma Card */}
+            <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-5 space-y-4">
+              <h4 className="font-extrabold text-slate-900 text-sm border-b border-slate-200/60 pb-2">Diploma</h4>
+              
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Diploma Board / University</label>
+                <select
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  value={studentProfile.pastQualification?.diploma?.board || "undefined"}
+                  onChange={(e) => setUserData({
+                    ...userData,
+                    studentProfile: {
+                      ...studentProfile,
+                      pastQualification: {
+                        ...studentProfile.pastQualification,
+                        diploma: { ...studentProfile.pastQualification?.diploma, board: e.target.value }
+                      }
+                    }
+                  })}
+                >
+                  <option disabled value="undefined">Select Board</option>
+                  <option value="Mumbai University">Mumbai University</option>
+                  <option value="NoDiploma">No Diploma</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Diploma CGPA / %</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="e.g. 8.5"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  value={studentProfile.pastQualification?.diploma?.percentage || ''}
+                  onChange={(e) => setUserData({
+                    ...userData,
+                    studentProfile: {
+                      ...studentProfile,
+                      pastQualification: {
+                        ...studentProfile.pastQualification,
+                        diploma: { ...studentProfile.pastQualification?.diploma, percentage: e.target.value }
+                      }
+                    }
+                  })}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Passing Year</label>
+                <input
+                  type="number"
+                  placeholder="e.g. 2023"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  value={studentProfile.pastQualification?.diploma?.year || ''}
+                  onChange={(e) => setUserData({
+                    ...userData,
+                    studentProfile: {
+                      ...studentProfile,
+                      pastQualification: {
+                        ...studentProfile.pastQualification,
+                        diploma: { ...studentProfile.pastQualification?.diploma, year: e.target.value }
+                      }
+                    }
+                  })}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Floating Action Submit Button */}
+        <div className="flex justify-center items-center pt-4">
+          <button
+            type="submit"
+            disabled={saving}
+            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-700 text-white font-extrabold text-sm rounded-2xl shadow-xl shadow-amber-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer disabled:opacity-50"
+          >
+            {saving ? (
+              <div className="w-5 h-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+            ) : (
+              <FaSave className="text-base" />
+            )}
+            <span>{saving ? 'Saving Placement Profile...' : 'Save Placement Profile'}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  );
 }
-export default UpdatePlacementProfile
+
+export default UpdatePlacementProfile;

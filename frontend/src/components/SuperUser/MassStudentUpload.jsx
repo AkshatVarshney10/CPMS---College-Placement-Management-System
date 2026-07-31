@@ -38,7 +38,6 @@ const MassStudentUpload = () => {
 
   const downloadResultExcel = (records, filename) => {
     if (!records || records.length === 0) return;
-    // Map records to match desired format
     const formatted = records.map(r => ({
       "Sr. No.": r.srNo,
       "Email Address": r.email,
@@ -51,7 +50,6 @@ const MassStudentUpload = () => {
     XLSX.writeFile(workbook, filename || "mass_upload_result.xlsx");
   };
 
-  // Handle spreadsheet import parsing
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -65,7 +63,6 @@ const MassStudentUpload = () => {
         const worksheet = workbook.Sheets[firstSheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-        // Normalize data key matches
         const parsedStudents = jsonData.map((row, index) => {
           const srNoKey = Object.keys(row).find(k => k.toLowerCase().replace(/[\s\.]/g, '') === 'srno');
           const srNo = srNoKey ? row[srNoKey] : index + 1;
@@ -76,7 +73,6 @@ const MassStudentUpload = () => {
           const nameKey = Object.keys(row).find(k => k.toLowerCase() === 'nameofstudent' || k.toLowerCase().replace(/\s/g, '') === 'nameofstudent' || k.toLowerCase() === 'name');
           const name = nameKey ? String(row[nameKey]).trim() : '';
 
-          // Simple email validation pattern
           const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
           return {
@@ -166,7 +162,7 @@ const MassStudentUpload = () => {
   };
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="max-w-7xl mx-auto space-y-8 pb-12">
       <Toast
         show={showToast}
         onClose={() => setShowToast(false)}
@@ -175,87 +171,93 @@ const MassStudentUpload = () => {
         position="bottom-end"
       />
 
-      {/* Title Card */}
-      <div className="bg-gradient-to-r from-violet-700 via-indigo-800 to-indigo-900 rounded-2xl p-6 text-white shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-3xl font-extrabold tracking-tight flex items-center gap-2">
-            <FaEnvelopeOpenText className="text-2xl" />
-            <span>Mass Student Onboarding</span>
-          </h2>
-          <p className="text-violet-100 mt-1 text-sm sm:text-base">
-            Pre-register students and automatically dispatch login credentials using a spreadsheet
+      {/* Hero Title Banner */}
+      <div className="relative rounded-3xl bg-gradient-to-br from-stone-900 via-stone-850 to-stone-900 p-8 sm:p-10 border border-stone-800 shadow-2xl overflow-hidden text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-amber-600 to-amber-700" />
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-600/20 text-amber-400 text-xs font-semibold border border-amber-500/30">
+            <FaEnvelopeOpenText className="text-xs" /> Automated Onboarding Engine
+          </div>
+          <h2 className="text-3xl font-extrabold tracking-tight">Mass Student Onboarding</h2>
+          <p className="text-stone-400 text-xs sm:text-sm max-w-xl">
+            Pre-register batch students and automatically dispatch login credentials using a `.xlsx` or `.csv` spreadsheet.
           </p>
         </div>
         <button
           onClick={downloadSampleTemplate}
-          className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-4 py-2.5 rounded-xl shadow-lg hover:shadow-emerald-500/20 transition duration-300 transform hover:-translate-y-0.5 active:translate-y-0 text-sm"
+          className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold px-5 py-3 rounded-xl shadow-lg shadow-amber-600/20 hover:shadow-xl transition-all cursor-pointer text-xs sm:text-sm shrink-0"
         >
           <FaFileDownload />
           <span>Download Excel Template</span>
         </button>
       </div>
 
-      {/* Alert details */}
+      {/* Error Alert */}
       {errorMsg && (
-        <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl flex items-start gap-3">
-          <FaTimesCircle className="text-xl mt-0.5 shrink-0" />
+        <div className="bg-rose-50 border border-rose-200 text-rose-800 p-4 rounded-2xl flex items-start gap-3 text-xs">
+          <FaTimesCircle className="text-base mt-0.5 shrink-0 text-rose-600" />
           <div>
-            <p className="font-semibold">Verification Notice</p>
-            <p className="text-sm">{errorMsg}</p>
+            <p className="font-bold">Verification Notice</p>
+            <p className="mt-0.5">{errorMsg}</p>
           </div>
         </div>
       )}
 
-      {/* Success details */}
+      {/* Success Summary Banner */}
       {successResponse && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-6 rounded-2xl space-y-4">
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 p-6 sm:p-8 rounded-3xl space-y-6">
           <div className="flex items-start gap-3">
             <FaCheckCircle className="text-2xl text-emerald-600 mt-0.5 shrink-0" />
             <div>
-              <h4 className="font-bold text-lg">Mass Onboarding Completed Successfully</h4>
-              <p className="text-sm mt-0.5">{successResponse.msg}</p>
+              <h4 className="font-bold text-base sm:text-lg">Mass Onboarding Completed Successfully</h4>
+              <p className="text-xs text-emerald-700 mt-0.5">{successResponse.msg}</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
-            <div className="bg-white p-4 rounded-xl border border-emerald-100 shadow-sm text-center">
-              <span className="text-2xl font-black text-emerald-600">{successResponse.createdCount}</span>
-              <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mt-1">Emailed & Registered</p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-white p-5 rounded-2xl border border-emerald-100 shadow-xs text-center">
+              <span className="text-3xl font-extrabold text-emerald-600">{successResponse.createdCount}</span>
+              <p className="text-[11px] text-stone-500 font-bold uppercase tracking-wider mt-1">Emailed & Registered</p>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-emerald-100 shadow-sm text-center">
-              <span className="text-2xl font-black text-amber-600">{successResponse.existingCount}</span>
-              <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mt-1">Skipped (Already Existed)</p>
+            <div className="bg-white p-5 rounded-2xl border border-emerald-100 shadow-xs text-center">
+              <span className="text-3xl font-extrabold text-amber-600">{successResponse.existingCount}</span>
+              <p className="text-[11px] text-stone-500 font-bold uppercase tracking-wider mt-1">Skipped (Existed)</p>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-emerald-100 shadow-sm text-center">
-              <span className="text-2xl font-black text-red-600">{successResponse.errorCount}</span>
-              <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mt-1">System Errors</p>
+            <div className="bg-white p-5 rounded-2xl border border-emerald-100 shadow-xs text-center">
+              <span className="text-3xl font-extrabold text-rose-600">{successResponse.errorCount}</span>
+              <p className="text-[11px] text-stone-500 font-bold uppercase tracking-wider mt-1">System Errors</p>
             </div>
           </div>
-          <div className="flex justify-end mt-4">
-             <button
-                onClick={() => downloadResultExcel(successResponse.records, "recent_mass_upload_result.xlsx")}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-xl shadow-lg hover:shadow-indigo-500/20 transition text-sm"
-              >
-                <FaFileDownload />
-                <span>Download Result Excel</span>
-             </button>
+
+          <div className="flex justify-end">
+            <button
+              onClick={() => downloadResultExcel(successResponse.records, "recent_mass_upload_result.xlsx")}
+              className="inline-flex items-center gap-2 bg-stone-900 hover:bg-stone-800 text-white font-semibold px-5 py-2.5 rounded-xl shadow-md text-xs transition-all cursor-pointer"
+            >
+              <FaFileDownload />
+              <span>Download Full Results Excel</span>
+            </button>
           </div>
         </div>
       )}
 
-      {/* File Upload Area */}
-      <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-md flex flex-col items-center justify-center text-center space-y-4 relative overflow-hidden group">
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-violet-500 to-indigo-600"></div>
-        <div className="p-4 bg-indigo-50 text-indigo-600 rounded-full">
-          <FaCloudUploadAlt className="text-4xl animate-bounce" />
+      {/* File Drag & Drop Card */}
+      <div className="bg-white p-8 sm:p-12 rounded-3xl border border-stone-200/80 shadow-xs flex flex-col items-center justify-center text-center space-y-4 relative overflow-hidden group">
+        <div className="w-16 h-16 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center border border-amber-200/60 shadow-xs group-hover:scale-110 transition-transform">
+          <FaCloudUploadAlt className="text-3xl animate-bounce" />
         </div>
+
         <div className="space-y-1">
-          <h4 className="text-lg font-bold text-gray-800">Upload Spreadsheet</h4>
-          <p className="text-sm text-gray-500 max-w-md">
-            Drag & drop or select your `.xlsx` or `.csv` onboarding file. Credentials will be sent immediately upon processing.
+          <h4 className="text-base sm:text-lg font-bold text-stone-900 tracking-tight">
+            Upload Student Spreadsheet
+          </h4>
+          <p className="text-xs text-stone-500 max-w-md leading-relaxed">
+            Drag & drop or select your `.xlsx` or `.csv` onboarding file. Credentials will be generated and dispatched immediately upon processing.
           </p>
         </div>
-        <label className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl cursor-pointer shadow-md hover:shadow-indigo-500/20 transition">
-          Choose File
+
+        <label className="px-6 py-3 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold text-xs rounded-xl cursor-pointer shadow-md shadow-amber-600/20 hover:shadow-lg transition-all">
+          Choose Spreadsheet File
           <input 
             type="file" 
             accept=".xlsx, .xls, .csv" 
@@ -265,72 +267,70 @@ const MassStudentUpload = () => {
         </label>
       </div>
 
-      {/* Data Preview Table */}
+      {/* Parsed Spreadsheet Preview Table */}
       {students.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden space-y-4">
-          <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div className="bg-white rounded-3xl border border-stone-200/80 shadow-xs overflow-hidden space-y-4">
+          <div className="p-6 border-b border-stone-200/80 bg-stone-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h4 className="text-lg font-bold text-gray-800">Parsed Spreadsheet Preview</h4>
-              <p className="text-xs text-gray-500 mt-0.5">Please review the parsed rows before triggering credential distribution</p>
+              <h4 className="text-base font-bold text-stone-900 tracking-tight">Parsed Spreadsheet Preview</h4>
+              <p className="text-xs text-stone-500 mt-0.5">Verify parsed entries before triggering mass account creation</p>
             </div>
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl shadow-lg hover:shadow-violet-500/25 transition disabled:opacity-50 flex items-center gap-2"
+              className="px-6 py-3 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold text-xs rounded-xl shadow-lg shadow-amber-600/20 transition disabled:opacity-50 flex items-center gap-2 cursor-pointer"
             >
               {loading ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
                   <span>Dispatching Credentials...</span>
                 </>
               ) : (
                 <>
                   <FaEnvelopeOpenText />
-                  <span>Onboard & Send credentials ({students.length})</span>
+                  <span>Onboard & Dispatch Credentials ({students.length})</span>
                 </>
               )}
             </button>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-100 text-gray-700 font-semibold text-xs tracking-wider uppercase">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left">Sr. No.</th>
-                  <th scope="col" className="px-6 py-3 text-left">Email Address</th>
-                  <th scope="col" className="px-6 py-3 text-left">Name of Student</th>
-                  <th scope="col" className="px-6 py-3 text-center">Status</th>
-                  <th scope="col" className="px-6 py-3 text-center">Actions</th>
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-stone-900 text-stone-300 font-semibold uppercase tracking-wider text-[11px] border-b border-stone-800">
+                  <th className="py-3.5 px-4 w-16 text-center">Sr. No.</th>
+                  <th className="py-3.5 px-4">Email Address</th>
+                  <th className="py-3.5 px-4">Name of Student</th>
+                  <th className="py-3.5 px-4 text-center w-28">Status</th>
+                  <th className="py-3.5 px-4 text-center w-20">Remove</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-100 text-sm text-gray-700">
+              <tbody className="divide-y divide-stone-200/70 text-stone-700 bg-white">
                 {students.map((student) => (
-                  <tr key={student.id} className="hover:bg-indigo-50/10">
-                    <td className="px-6 py-4 font-bold text-gray-500">{student.srNo}</td>
-                    <td className="px-6 py-4 font-semibold">
-                      <span className={student.isValid ? 'text-gray-800' : 'text-red-600 line-through'}>
+                  <tr key={student.id} className="hover:bg-amber-50/40 transition-colors">
+                    <td className="py-3.5 px-4 text-center font-medium text-stone-500">{student.srNo}</td>
+                    <td className="py-3.5 px-4 font-semibold">
+                      <span className={student.isValid ? 'text-stone-900' : 'text-rose-600 line-through'}>
                         {student.email}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      {student.name}
-                    </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="py-3.5 px-4 font-medium text-stone-800">{student.name || 'N/A'}</td>
+                    <td className="py-3.5 px-4 text-center">
                       {student.isValid ? (
-                        <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full text-xs font-semibold">
+                        <span className="bg-emerald-100 text-emerald-800 border border-emerald-200 px-2.5 py-0.5 rounded-full text-[11px] font-semibold">
                           Valid
                         </span>
                       ) : (
-                        <span className="bg-red-100 text-red-800 px-2 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1 justify-center">
-                          <FaInfoCircle /> Invalid Email
+                        <span className="bg-rose-100 text-rose-800 border border-rose-200 px-2.5 py-0.5 rounded-full text-[11px] font-semibold inline-flex items-center gap-1">
+                          <FaInfoCircle className="text-xs" /> Invalid Email
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="py-3.5 px-4 text-center">
                       <button
                         onClick={() => handleRemoveRow(student.id)}
-                        className="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition"
-                        title="Remove row"
+                        className="p-1.5 text-stone-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition cursor-pointer"
+                        title="Remove record"
                       >
                         <FaTrashAlt />
                       </button>
@@ -343,39 +343,43 @@ const MassStudentUpload = () => {
         </div>
       )}
 
-      {/* History Section */}
+      {/* Upload History Table */}
       {history.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden space-y-4">
-          <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-             <h4 className="text-lg font-bold text-gray-800">Past Uploads History</h4>
+        <div className="bg-white rounded-3xl border border-stone-200/80 shadow-xs overflow-hidden space-y-4">
+          <div className="p-6 border-b border-stone-200/80 bg-stone-50/50 flex justify-between items-center">
+            <div>
+              <h4 className="text-base font-bold text-stone-900 tracking-tight">Past Uploads History</h4>
+              <p className="text-xs text-stone-500 mt-0.5">Log of previously processed mass onboarding spreadsheets</p>
+            </div>
           </div>
+
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-100 text-gray-700 font-semibold text-xs tracking-wider uppercase">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left">Upload Date</th>
-                  <th scope="col" className="px-6 py-3 text-center">Total Records</th>
-                  <th scope="col" className="px-6 py-3 text-center">Sent</th>
-                  <th scope="col" className="px-6 py-3 text-center">Exists</th>
-                  <th scope="col" className="px-6 py-3 text-center">Failed</th>
-                  <th scope="col" className="px-6 py-3 text-center">Actions</th>
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-stone-900 text-stone-300 font-semibold uppercase tracking-wider text-[11px] border-b border-stone-800">
+                  <th className="py-3.5 px-4">Upload Date & Time</th>
+                  <th className="py-3.5 px-4 text-center">Total Records</th>
+                  <th className="py-3.5 px-4 text-center">Sent</th>
+                  <th className="py-3.5 px-4 text-center">Exists</th>
+                  <th className="py-3.5 px-4 text-center">Failed</th>
+                  <th className="py-3.5 px-4 text-center w-24">Download</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-100 text-sm text-gray-700">
+              <tbody className="divide-y divide-stone-200/70 text-stone-700 bg-white">
                 {history.map((record) => (
-                  <tr key={record._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
+                  <tr key={record._id} className="hover:bg-stone-50 transition-colors">
+                    <td className="py-3.5 px-4 font-semibold text-stone-900">
                       {new Date(record.uploadDate).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 text-center">{record.totalRecords}</td>
-                    <td className="px-6 py-4 text-center font-bold text-emerald-600">{record.successful}</td>
-                    <td className="px-6 py-4 text-center font-bold text-amber-600">{record.existing}</td>
-                    <td className="px-6 py-4 text-center font-bold text-red-600">{record.failed}</td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="py-3.5 px-4 text-center font-bold text-stone-800">{record.totalRecords}</td>
+                    <td className="py-3.5 px-4 text-center font-bold text-emerald-600">{record.successful}</td>
+                    <td className="py-3.5 px-4 text-center font-bold text-amber-600">{record.existing}</td>
+                    <td className="py-3.5 px-4 text-center font-bold text-rose-600">{record.failed}</td>
+                    <td className="py-3.5 px-4 text-center">
                       <button
                         onClick={() => downloadResultExcel(record.records, `mass_upload_${new Date(record.uploadDate).toISOString().slice(0,10)}.xlsx`)}
-                        className="p-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-lg transition"
-                        title="Download Results"
+                        className="p-2 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white rounded-lg transition-all cursor-pointer shadow-xs"
+                        title="Download Results Excel"
                       >
                         <FaFileDownload />
                       </button>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  PieChart, Pie, Cell, LineChart, Line, ComposedChart, AreaChart, Area
+  PieChart, Pie, Cell, LineChart, Line, ComposedChart
 } from 'recharts';
 import {
   FaPercent, FaMoneyBillWave, FaBriefcase,
@@ -11,7 +11,7 @@ import {
 import Toast from '../Toast';
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
-const COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
+const COLORS = ['#D97706', '#059669', '#7C3AED', '#DC2626', '#2563EB', '#DB2777'];
 
 const PlacementStats = () => {
   document.title = 'CPMS | Placement Analytics';
@@ -21,7 +21,7 @@ const PlacementStats = () => {
   const [error, setError] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'table' | 'stipend'
+  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -50,28 +50,27 @@ const PlacementStats = () => {
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center h-96 gap-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-indigo-600"></div>
-        <p className="text-gray-600 font-medium animate-pulse">Loading Placement Analytics...</p>
+        <div className="w-10 h-10 rounded-full border-4 border-amber-600 border-t-transparent animate-spin"></div>
+        <p className="text-stone-500 font-medium text-xs animate-pulse">Loading Placement Analytics...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-6 my-4 text-center">
-        <h4 className="font-semibold text-lg mb-2">Error Loading Statistics</h4>
-        <p className="mb-4">{error}</p>
+      <div className="bg-rose-50 border border-rose-200 text-rose-800 rounded-3xl p-8 my-4 text-center max-w-xl mx-auto space-y-4">
+        <h4 className="font-bold text-lg">Error Loading Statistics</h4>
+        <p className="text-xs">{error}</p>
         <button 
           onClick={() => window.location.reload()} 
-          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-medium transition"
+          className="px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs transition cursor-pointer"
         >
-          Retry
+          Retry Fetching Data
         </button>
       </div>
     );
   }
 
-  // Calculate Overall aggregates
   const overallStrength = stats.reduce((acc, curr) => acc + curr.totalStrength, 0);
   const overallPlaced = stats.reduce((acc, curr) => acc + curr.placed, 0);
   const overallUnplaced = stats.reduce((acc, curr) => acc + curr.unplaced, 0);
@@ -83,11 +82,9 @@ const PlacementStats = () => {
   const highestLPA = stats.length > 0 ? Math.max(...stats.map(s => s.highestLPA)) : 0;
   const highestStipend = stats.length > 0 ? Math.max(...stats.map(s => s.highestStipend)) : 0;
 
-  // Weighted Average package
   const placedTotalCTC = stats.reduce((acc, curr) => acc + (curr.avgLPA * curr.placed), 0);
   const overallAvgLPA = overallPlaced > 0 ? parseFloat((placedTotalCTC / overallPlaced).toFixed(2)) : 0;
 
-  // Chart Data formatters
   const branchBarData = stats.map(s => ({
     name: s.branch,
     Placed: s.placed,
@@ -143,8 +140,7 @@ const PlacementStats = () => {
   };
 
   return (
-    <div className="p-1 space-y-6">
-      {/* Toast Notification */}
+    <div className="max-w-7xl mx-auto space-y-8 pb-12">
       <Toast
         show={showToast}
         onClose={() => setShowToast(false)}
@@ -153,15 +149,21 @@ const PlacementStats = () => {
         position="bottom-end"
       />
 
-      {/* Header section with summary and export button */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gradient-to-r from-indigo-700 via-indigo-800 to-blue-900 rounded-2xl p-6 text-white shadow-xl gap-4">
-        <div>
+      {/* Hero Header Banner */}
+      <div className="relative rounded-3xl bg-gradient-to-br from-stone-900 via-stone-850 to-stone-900 p-8 sm:p-10 border border-stone-800 shadow-2xl overflow-hidden text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-amber-600 to-amber-700" />
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-600/20 text-amber-400 text-xs font-semibold border border-amber-500/30">
+            <FaChartLine className="text-xs" /> Placement Intelligence Hub
+          </div>
           <h2 className="text-3xl font-extrabold tracking-tight">Placement Statistics & Insights</h2>
-          <p className="text-indigo-100 mt-1 text-sm sm:text-base">Real-time analytical metrics, packages, and department summaries</p>
+          <p className="text-stone-400 text-xs sm:text-sm max-w-xl">
+            Real-time analytical metrics, salary packages, stipend distributions, and department breakdowns.
+          </p>
         </div>
         <button
           onClick={handleExportCSV}
-          className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-5 py-2.5 rounded-xl shadow-lg hover:shadow-emerald-500/25 transition duration-300 transform hover:-translate-y-0.5 active:translate-y-0 text-sm sm:text-base"
+          className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold px-5 py-3 rounded-xl shadow-lg shadow-amber-600/20 transition-all cursor-pointer text-xs sm:text-sm shrink-0"
         >
           <FaFileExport />
           <span>Export Summary (CSV)</span>
@@ -169,159 +171,154 @@ const PlacementStats = () => {
       </div>
 
       {/* Top Level Metric Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Card 1: Overall Placement % */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-lg hover:shadow-xl hover:border-indigo-100 transition duration-300 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-bl-full -z-10 group-hover:scale-110 transition duration-300"></div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Placement Rate */}
+        <div className="bg-white rounded-3xl p-6 border border-stone-200/80 shadow-xs relative overflow-hidden group">
           <div className="flex items-center justify-between">
-            <span className="text-gray-500 font-semibold text-sm tracking-wide uppercase">Placement Rate</span>
-            <div className="p-3 bg-indigo-100 rounded-xl text-indigo-600">
-              <FaPercent className="text-lg" />
+            <span className="text-stone-500 font-bold text-xs uppercase tracking-wider">Placement Rate</span>
+            <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-700 border border-amber-200/80 flex items-center justify-center text-sm shadow-xs">
+              <FaPercent />
             </div>
           </div>
-          <div className="mt-4">
-            <h3 className="text-3xl font-black text-gray-800">{overallPercentPlaced}%</h3>
-            <div className="w-full bg-gray-100 rounded-full h-2.5 mt-3 overflow-hidden">
+          <div className="mt-4 space-y-2">
+            <h3 className="text-3xl font-extrabold text-stone-900">{overallPercentPlaced}%</h3>
+            <div className="w-full bg-stone-100 rounded-full h-2 overflow-hidden">
               <div 
-                className="bg-indigo-600 h-2.5 rounded-full transition-all duration-1000 ease-out" 
+                className="bg-gradient-to-r from-amber-600 to-amber-700 h-2 rounded-full transition-all duration-1000" 
                 style={{ width: `${overallPercentPlaced}%` }}
-              ></div>
+              />
             </div>
-            <p className="text-xs text-gray-500 mt-2 font-medium">
+            <p className="text-[11px] text-stone-500 font-semibold">
               {overallPlaced} of {overallStrength} students placed
             </p>
           </div>
         </div>
 
-        {/* Card 2: Average CTC */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-lg hover:shadow-xl hover:border-emerald-100 transition duration-300 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-bl-full -z-10 group-hover:scale-110 transition duration-300"></div>
+        {/* Average Package */}
+        <div className="bg-white rounded-3xl p-6 border border-stone-200/80 shadow-xs relative overflow-hidden group">
           <div className="flex items-center justify-between">
-            <span className="text-gray-500 font-semibold text-sm tracking-wide uppercase">Average Package</span>
-            <div className="p-3 bg-emerald-100 rounded-xl text-emerald-600">
-              <FaMoneyBillWave className="text-lg" />
+            <span className="text-stone-500 font-bold text-xs uppercase tracking-wider">Average Package</span>
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200/80 flex items-center justify-center text-sm shadow-xs">
+              <FaMoneyBillWave />
             </div>
           </div>
-          <div className="mt-4">
-            <h3 className="text-3xl font-black text-gray-800">{overallAvgLPA} LPA</h3>
-            <p className="text-xs text-emerald-600 mt-2 font-semibold flex items-center gap-1">
+          <div className="mt-4 space-y-1">
+            <h3 className="text-3xl font-extrabold text-stone-900">{overallAvgLPA} LPA</h3>
+            <p className="text-[11px] text-emerald-600 font-bold flex items-center gap-1 mt-2">
               <FaChartLine />
               <span>Overall weighted average</span>
             </p>
-            <p className="text-xs text-gray-500 mt-1 font-medium">Calculated across hired candidates</p>
+            <p className="text-[11px] text-stone-500 font-medium">Calculated across hired candidates</p>
           </div>
         </div>
 
-        {/* Card 3: Highest CTC */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-lg hover:shadow-xl hover:border-amber-100 transition duration-300 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50 rounded-bl-full -z-10 group-hover:scale-110 transition duration-300"></div>
+        {/* Highest CTC */}
+        <div className="bg-white rounded-3xl p-6 border border-stone-200/80 shadow-xs relative overflow-hidden group">
           <div className="flex items-center justify-between">
-            <span className="text-gray-500 font-semibold text-sm tracking-wide uppercase">Highest CTC Offered</span>
-            <div className="p-3 bg-amber-100 rounded-xl text-amber-600">
-              <FaGraduationCap className="text-lg" />
+            <span className="text-stone-500 font-bold text-xs uppercase tracking-wider">Highest Package</span>
+            <div className="w-10 h-10 rounded-2xl bg-purple-50 text-purple-700 border border-purple-200/80 flex items-center justify-center text-sm shadow-xs">
+              <FaGraduationCap />
             </div>
           </div>
-          <div className="mt-4">
-            <h3 className="text-3xl font-black text-gray-800">{highestLPA} LPA</h3>
-            <p className="text-xs text-amber-600 mt-2 font-semibold flex items-center gap-1">
-              <span>★ Peak offer in cohort</span>
+          <div className="mt-4 space-y-1">
+            <h3 className="text-3xl font-extrabold text-stone-900">{highestLPA} LPA</h3>
+            <p className="text-[11px] text-purple-600 font-bold mt-2">
+              ★ Peak offer in cohort
             </p>
-            <p className="text-xs text-gray-500 mt-1 font-medium">Driven by Dream category listings</p>
+            <p className="text-[11px] text-stone-500 font-medium">Driven by Dream tier companies</p>
           </div>
         </div>
 
-        {/* Card 4: Placements Overview */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-lg hover:shadow-xl hover:border-violet-100 transition duration-300 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-violet-50 rounded-bl-full -z-10 group-hover:scale-110 transition duration-300"></div>
+        {/* Multiple Offers */}
+        <div className="bg-white rounded-3xl p-6 border border-stone-200/80 shadow-xs relative overflow-hidden group">
           <div className="flex items-center justify-between">
-            <span className="text-gray-500 font-semibold text-sm tracking-wide uppercase">Multiple Offers</span>
-            <div className="p-3 bg-violet-100 rounded-xl text-violet-600">
-              <FaBriefcase className="text-lg" />
+            <span className="text-stone-500 font-bold text-xs uppercase tracking-wider">Multiple Offers</span>
+            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-700 border border-blue-200/80 flex items-center justify-center text-sm shadow-xs">
+              <FaBriefcase />
             </div>
           </div>
-          <div className="mt-4">
-            <h3 className="text-3xl font-black text-gray-800">{overallMultipleOffers}</h3>
-            <p className="text-xs text-gray-500 mt-2 font-semibold">
-              On-Campus Placements: {overallOnCampus}
+          <div className="mt-4 space-y-1">
+            <h3 className="text-3xl font-extrabold text-stone-900">{overallMultipleOffers}</h3>
+            <p className="text-[11px] text-stone-600 font-semibold mt-2">
+              On-Campus: {overallOnCampus}
             </p>
-            <p className="text-xs text-gray-500 mt-0.5 font-medium">
-              Off-Campus Placements: {overallOffCampus}
+            <p className="text-[11px] text-stone-500 font-medium">
+              Off-Campus: {overallOffCampus}
             </p>
           </div>
         </div>
       </div>
 
       {/* Tabs Menu */}
-      <div className="flex border-b border-gray-200">
+      <div className="flex border-b border-stone-200/80 bg-white rounded-2xl p-1.5 shadow-xs gap-2">
         <button
           onClick={() => setActiveTab('overview')}
-          className={`py-3 px-6 font-semibold text-sm border-b-2 transition duration-300 ${
+          className={`flex-1 py-2.5 px-4 font-bold text-xs rounded-xl transition-all cursor-pointer ${
             activeTab === 'overview'
-              ? 'border-indigo-600 text-indigo-600'
-              : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
+              ? 'bg-stone-900 text-white shadow-xs'
+              : 'text-stone-600 hover:bg-stone-100'
           }`}
         >
-          Overview Charts
+          Overview Visual Analytics
         </button>
         <button
           onClick={() => setActiveTab('table')}
-          className={`py-3 px-6 font-semibold text-sm border-b-2 transition duration-300 ${
+          className={`flex-1 py-2.5 px-4 font-bold text-xs rounded-xl transition-all cursor-pointer ${
             activeTab === 'table'
-              ? 'border-indigo-600 text-indigo-600'
-              : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
+              ? 'bg-stone-900 text-white shadow-xs'
+              : 'text-stone-600 hover:bg-stone-100'
           }`}
         >
-          Detailed Branch Report
+          Department Performance Matrix
         </button>
         <button
           onClick={() => setActiveTab('stipend')}
-          className={`py-3 px-6 font-semibold text-sm border-b-2 transition duration-300 ${
+          className={`flex-1 py-2.5 px-4 font-bold text-xs rounded-xl transition-all cursor-pointer ${
             activeTab === 'stipend'
-              ? 'border-indigo-600 text-indigo-600'
-              : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
+              ? 'bg-stone-900 text-white shadow-xs'
+              : 'text-stone-600 hover:bg-stone-100'
           }`}
         >
-          Stipend Reports
+          Internship Stipend Reports
         </button>
       </div>
 
       {/* Tab Contents */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
-          {/* Main Chart Rows */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Chart 1: Placed vs Unplaced per Branch */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-md">
-              <h4 className="text-lg font-bold text-gray-800 mb-4">Placed vs Unplaced Students by Branch</h4>
+            <div className="bg-white p-6 rounded-3xl border border-stone-200/80 shadow-xs space-y-4">
+              <h4 className="text-base font-bold text-stone-900 tracking-tight">Placed vs Unplaced Students by Branch</h4>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={branchBarData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="name" stroke="#9CA3AF" fontSize={12} tickLine={false} />
-                    <YAxis stroke="#9CA3AF" fontSize={12} tickLine={false} />
-                    <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} />
-                    <Legend iconType="circle" />
-                    <Bar dataKey="Placed" fill="#4F46E5" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="Unplaced" fill="#F43F5E" radius={[4, 4, 0, 0]} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E7E5E4" />
+                    <XAxis dataKey="name" stroke="#78716C" fontSize={11} tickLine={false} />
+                    <YAxis stroke="#78716C" fontSize={11} tickLine={false} />
+                    <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #E7E5E4', fontSize: '12px' }} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+                    <Bar dataKey="Placed" fill="#D97706" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="Unplaced" fill="#E11D48" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
             {/* Chart 2: Package Comparison */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-md">
-              <h4 className="text-lg font-bold text-gray-800 mb-4">Package Comparison by Branch (LPA)</h4>
+            <div className="bg-white p-6 rounded-3xl border border-stone-200/80 shadow-xs space-y-4">
+              <h4 className="text-base font-bold text-stone-900 tracking-tight">Package Comparison by Branch (LPA)</h4>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={packageLineData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="name" stroke="#9CA3AF" fontSize={12} tickLine={false} />
-                    <YAxis stroke="#9CA3AF" fontSize={12} tickLine={false} label={{ value: 'LPA', angle: -90, position: 'insideLeft', fill: '#9CA3AF' }} />
-                    <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} />
-                    <Legend iconType="circle" />
-                    <Bar dataKey="Highest Package" fill="#F59E0B" radius={[4, 4, 0, 0]} barSize={25} />
-                    <Line type="monotone" dataKey="Average Package" stroke="#10B981" strokeWidth={3} dot={{ r: 5 }} />
-                    <Line type="monotone" dataKey="Median Package" stroke="#4F46E5" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 4 }} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E7E5E4" />
+                    <XAxis dataKey="name" stroke="#78716C" fontSize={11} tickLine={false} />
+                    <YAxis stroke="#78716C" fontSize={11} tickLine={false} label={{ value: 'LPA', angle: -90, position: 'insideLeft', fill: '#78716C', fontSize: 11 }} />
+                    <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #E7E5E4', fontSize: '12px' }} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+                    <Bar dataKey="Highest Package" fill="#7C3AED" radius={[6, 6, 0, 0]} barSize={24} />
+                    <Line type="monotone" dataKey="Average Package" stroke="#059669" strokeWidth={3} dot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="Median Package" stroke="#D97706" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3 }} />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
@@ -330,23 +327,23 @@ const PlacementStats = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Chart 3: On-Campus vs Off-Campus */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-md flex flex-col justify-between">
+            <div className="bg-white p-6 rounded-3xl border border-stone-200/80 shadow-xs flex flex-col justify-between space-y-4">
               <div>
-                <h4 className="text-lg font-bold text-gray-800 mb-2">Campus Placement Distribution</h4>
-                <p className="text-sm text-gray-500 mb-4">Comparison between On-Campus drives and Off-Campus selection metrics</p>
+                <h4 className="text-base font-bold text-stone-900 tracking-tight">Campus Placement Distribution</h4>
+                <p className="text-xs text-stone-500 mt-0.5">Comparison between On-Campus drives and Off-Campus selection metrics</p>
               </div>
-              <div className="flex flex-col sm:flex-row items-center justify-around gap-6">
+              <div className="flex flex-col sm:flex-row items-center justify-around gap-6 py-4">
                 {campusPieData.length > 0 ? (
                   <>
-                    <div className="w-56 h-56">
+                    <div className="w-52 h-52">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
                             data={campusPieData}
                             cx="50%"
                             cy="50%"
-                            innerRadius={60}
-                            outerRadius={80}
+                            innerRadius={55}
+                            outerRadius={75}
                             paddingAngle={5}
                             dataKey="value"
                           >
@@ -358,41 +355,41 @@ const PlacementStats = () => {
                         </PieChart>
                       </ResponsiveContainer>
                     </div>
-                    <div className="space-y-4">
+                    <div className="space-y-3 text-xs">
                       {campusPieData.map((item, index) => (
-                        <div key={item.name} className="flex items-center gap-3">
-                          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                        <div key={item.name} className="flex items-center gap-2.5">
+                          <div className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
                           <div>
-                            <span className="font-semibold text-gray-800">{item.name}</span>
-                            <span className="text-gray-500 ml-2">({item.value} offers)</span>
+                            <span className="font-bold text-stone-900">{item.name}</span>
+                            <span className="text-stone-500 ml-1.5">({item.value} offers)</span>
                           </div>
                         </div>
                       ))}
                     </div>
                   </>
                 ) : (
-                  <p className="text-gray-500 text-center py-10 w-full">No active placement data available</p>
+                  <p className="text-stone-400 text-xs text-center py-10 w-full">No active placement data available</p>
                 )}
               </div>
             </div>
 
             {/* Chart 4: Branch Placed Contribution */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-md flex flex-col justify-between">
+            <div className="bg-white p-6 rounded-3xl border border-stone-200/80 shadow-xs flex flex-col justify-between space-y-4">
               <div>
-                <h4 className="text-lg font-bold text-gray-800 mb-2">Placed Student Share by Branch</h4>
-                <p className="text-sm text-gray-500 mb-4">Relative contribution of each department to total cohort placements</p>
+                <h4 className="text-base font-bold text-stone-900 tracking-tight">Placed Student Share by Branch</h4>
+                <p className="text-xs text-stone-500 mt-0.5">Relative contribution of each department to total cohort placements</p>
               </div>
-              <div className="flex flex-col sm:flex-row items-center justify-around gap-6">
+              <div className="flex flex-col sm:flex-row items-center justify-around gap-6 py-4">
                 {branchPieData.length > 0 ? (
                   <>
-                    <div className="w-56 h-56">
+                    <div className="w-52 h-52">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
                             data={branchPieData}
                             cx="50%"
                             cy="50%"
-                            outerRadius={80}
+                            outerRadius={75}
                             fill="#8884d8"
                             dataKey="value"
                             labelLine={false}
@@ -405,20 +402,20 @@ const PlacementStats = () => {
                         </PieChart>
                       </ResponsiveContainer>
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-2.5 text-xs">
                       {branchPieData.map((item, index) => (
-                        <div key={item.name} className="flex items-center gap-3">
-                          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: COLORS[(index + 2) % COLORS.length] }}></div>
+                        <div key={item.name} className="flex items-center gap-2.5">
+                          <div className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: COLORS[(index + 2) % COLORS.length] }} />
                           <div>
-                            <span className="font-semibold text-gray-800">{item.name}</span>
-                            <span className="text-gray-500 ml-2">({item.value} placed)</span>
+                            <span className="font-bold text-stone-900">{item.name}</span>
+                            <span className="text-stone-500 ml-1.5">({item.value} placed)</span>
                           </div>
                         </div>
                       ))}
                     </div>
                   </>
                 ) : (
-                  <p className="text-gray-500 text-center py-10 w-full">No hired student records found</p>
+                  <p className="text-stone-400 text-xs text-center py-10 w-full">No hired student records found</p>
                 )}
               </div>
             </div>
@@ -427,79 +424,72 @@ const PlacementStats = () => {
       )}
 
       {activeTab === 'table' && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
-            <h4 className="text-lg font-bold text-gray-800">Department Performance Spreadsheet</h4>
-            <p className="text-xs text-gray-500">Comprehensive summary of recruitment stats, package ranges, and offer types</p>
+        <div className="bg-white rounded-3xl border border-stone-200/80 shadow-xs overflow-hidden space-y-4">
+          <div className="p-6 border-b border-stone-200/80 bg-stone-50/50">
+            <h4 className="text-base font-bold text-stone-900 tracking-tight">Department Performance Spreadsheet</h4>
+            <p className="text-xs text-stone-500 mt-0.5">Comprehensive summary of recruitment stats, package ranges, and offer types</p>
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-100 text-gray-700 font-semibold text-xs tracking-wider uppercase">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left">Branch</th>
-                  <th scope="col" className="px-6 py-3 text-center">Strength</th>
-                  <th scope="col" className="px-6 py-3 text-center">Placed</th>
-                  <th scope="col" className="px-6 py-3 text-center">Unplaced</th>
-                  <th scope="col" className="px-6 py-3 text-center">% Placed</th>
-                  <th scope="col" className="px-6 py-3 text-center">Avg CTC</th>
-                  <th scope="col" className="px-6 py-3 text-center">Highest CTC</th>
-                  <th scope="col" className="px-6 py-3 text-center">Median CTC</th>
-                  <th scope="col" className="px-6 py-3 text-center">Campus Type</th>
-                  <th scope="col" className="px-6 py-3 text-center">Multiple Offers</th>
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-stone-900 text-stone-300 font-semibold uppercase tracking-wider text-[11px] border-b border-stone-800">
+                  <th className="py-3.5 px-4">Branch</th>
+                  <th className="py-3.5 px-4 text-center">Strength</th>
+                  <th className="py-3.5 px-4 text-center">Placed</th>
+                  <th className="py-3.5 px-4 text-center">Unplaced</th>
+                  <th className="py-3.5 px-4 text-center">% Placed</th>
+                  <th className="py-3.5 px-4 text-center">Avg CTC</th>
+                  <th className="py-3.5 px-4 text-center">Highest CTC</th>
+                  <th className="py-3.5 px-4 text-center">Median CTC</th>
+                  <th className="py-3.5 px-4 text-center">Campus Type</th>
+                  <th className="py-3.5 px-4 text-center">Multiple Offers</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-100 text-sm text-gray-700">
-                {stats.map((s, index) => (
-                  <tr 
-                    key={s.branch} 
-                    className="hover:bg-indigo-50/20 transition duration-150 cursor-pointer"
-                  >
-                    <td className="px-6 py-4 font-bold text-indigo-700">{s.branch}</td>
-                    <td className="px-6 py-4 text-center font-medium">{s.totalStrength}</td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full text-xs font-semibold">
+              <tbody className="divide-y divide-stone-200/70 text-stone-700 bg-white">
+                {stats.map((s) => (
+                  <tr key={s.branch} className="hover:bg-amber-50/40 transition-colors">
+                    <td className="py-3.5 px-4 font-bold text-stone-900 text-sm">{s.branch}</td>
+                    <td className="py-3.5 px-4 text-center font-semibold text-stone-800">{s.totalStrength}</td>
+                    <td className="py-3.5 px-4 text-center">
+                      <span className="bg-emerald-100 text-emerald-800 border border-emerald-200 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
                         {s.placed}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="bg-rose-100 text-rose-800 px-2.5 py-1 rounded-full text-xs font-semibold">
+                    <td className="py-3.5 px-4 text-center">
+                      <span className="bg-rose-100 text-rose-800 border border-rose-200 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
                         {s.unplaced}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center font-bold text-gray-800">{s.percentPlaced}%</td>
-                    <td className="px-6 py-4 text-center font-semibold text-emerald-600">{s.avgLPA} LPA</td>
-                    <td className="px-6 py-4 text-center font-semibold text-indigo-600">{s.highestLPA} LPA</td>
-                    <td className="px-6 py-4 text-center font-medium text-gray-600">{s.medianLPA} LPA</td>
-                    <td className="px-6 py-4 text-center text-xs">
-                      <div className="flex flex-col gap-0.5 justify-center">
-                        <span className="text-blue-700 font-medium">On-Campus: {s.onCampus}</span>
-                        <span className="text-amber-700 font-medium">Off-Campus: {s.offCampus}</span>
+                    <td className="py-3.5 px-4 text-center font-extrabold text-amber-700">{s.percentPlaced}%</td>
+                    <td className="py-3.5 px-4 text-center font-bold text-emerald-700">{s.avgLPA} LPA</td>
+                    <td className="py-3.5 px-4 text-center font-bold text-purple-700">{s.highestLPA} LPA</td>
+                    <td className="py-3.5 px-4 text-center font-medium text-stone-600">{s.medianLPA} LPA</td>
+                    <td className="py-3.5 px-4 text-center text-[11px]">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-blue-700 font-semibold">On-Campus: {s.onCampus}</span>
+                        <span className="text-amber-700 font-semibold">Off-Campus: {s.offCampus}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="bg-purple-100 text-purple-800 px-2.5 py-1 rounded-full text-xs font-semibold">
-                        {s.multipleOffers}
-                      </span>
-                    </td>
+                    <td className="py-3.5 px-4 text-center font-extrabold text-stone-900">{s.multipleOffers}</td>
                   </tr>
                 ))}
-                {/* Overall Aggregations Row */}
-                <tr className="bg-indigo-50/50 font-semibold border-t-2 border-indigo-200">
-                  <td className="px-6 py-4 font-black text-indigo-900">Overall Summary</td>
-                  <td className="px-6 py-4 text-center font-black">{overallStrength}</td>
-                  <td className="px-6 py-4 text-center font-black text-emerald-700">{overallPlaced}</td>
-                  <td className="px-6 py-4 text-center font-black text-rose-700">{overallUnplaced}</td>
-                  <td className="px-6 py-4 text-center font-black text-indigo-950">{overallPercentPlaced}%</td>
-                  <td className="px-6 py-4 text-center font-black text-emerald-600">{overallAvgLPA} LPA</td>
-                  <td className="px-6 py-4 text-center font-black text-indigo-600">{highestLPA} LPA</td>
-                  <td className="px-6 py-4 text-center font-black text-gray-600">-</td>
-                  <td className="px-6 py-4 text-center text-xs">
-                    <div className="flex flex-col gap-0.5 justify-center font-bold">
-                      <span className="text-blue-800">On-Campus: {overallOnCampus}</span>
-                      <span className="text-amber-800">Off-Campus: {overallOffCampus}</span>
+                {/* Summary Row */}
+                <tr className="bg-stone-900 text-white font-bold border-t-2 border-amber-600">
+                  <td className="py-4 px-4 font-black">Overall Summary</td>
+                  <td className="py-4 px-4 text-center">{overallStrength}</td>
+                  <td className="py-4 px-4 text-center text-emerald-400">{overallPlaced}</td>
+                  <td className="py-4 px-4 text-center text-rose-400">{overallUnplaced}</td>
+                  <td className="py-4 px-4 text-center text-amber-400 font-extrabold">{overallPercentPlaced}%</td>
+                  <td className="py-4 px-4 text-center text-emerald-400">{overallAvgLPA} LPA</td>
+                  <td className="py-4 px-4 text-center text-purple-400">{highestLPA} LPA</td>
+                  <td className="py-4 px-4 text-center text-stone-400">-</td>
+                  <td className="py-4 px-4 text-center text-[11px]">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-blue-300">On-Campus: {overallOnCampus}</span>
+                      <span className="text-amber-300">Off-Campus: {overallOffCampus}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-center font-black text-purple-700">{overallMultipleOffers}</td>
+                  <td className="py-4 px-4 text-center text-purple-300">{overallMultipleOffers}</td>
                 </tr>
               </tbody>
             </table>
@@ -511,45 +501,45 @@ const PlacementStats = () => {
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Chart: Stipend Comparison */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-md">
-              <h4 className="text-lg font-bold text-gray-800 mb-4">Internship Stipend Performance (INR/Month)</h4>
+            <div className="bg-white p-6 rounded-3xl border border-stone-200/80 shadow-xs space-y-4">
+              <h4 className="text-base font-bold text-stone-900 tracking-tight">Internship Stipend Performance (INR/Month)</h4>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={stipendBarData} margin={{ top: 20, right: 30, left: 10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="name" stroke="#9CA3AF" fontSize={12} tickLine={false} />
-                    <YAxis stroke="#9CA3AF" fontSize={12} tickLine={false} />
-                    <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB' }} />
-                    <Legend iconType="circle" />
-                    <Bar dataKey="Average Stipend" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="Highest Stipend" fill="#EC4899" radius={[4, 4, 0, 0]} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E7E5E4" />
+                    <XAxis dataKey="name" stroke="#78716C" fontSize={11} tickLine={false} />
+                    <YAxis stroke="#78716C" fontSize={11} tickLine={false} />
+                    <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} contentStyle={{ borderRadius: '12px', border: '1px solid #E7E5E4', fontSize: '12px' }} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+                    <Bar dataKey="Average Stipend" fill="#7C3AED" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="Highest Stipend" fill="#D97706" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
             {/* Detailed Stipend Summary Cards */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-md flex flex-col justify-between">
+            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-stone-200/80 shadow-xs flex flex-col justify-between space-y-6">
               <div>
-                <h4 className="text-lg font-bold text-gray-800 mb-2">Highest Monthly Stipend</h4>
-                <p className="text-sm text-gray-500 mb-6">Peak internship stipend recorded in this placement season</p>
-                <div className="flex items-center gap-4 bg-purple-50 border border-purple-100 p-6 rounded-2xl">
-                  <div className="p-4 bg-purple-600 text-white rounded-2xl shadow-lg">
+                <h4 className="text-base font-bold text-stone-900 tracking-tight">Highest Monthly Stipend</h4>
+                <p className="text-xs text-stone-500 mt-0.5 mb-6">Peak internship stipend recorded in this placement season</p>
+                <div className="flex items-center gap-4 bg-amber-50 border border-amber-200/80 p-6 rounded-2xl">
+                  <div className="p-4 bg-gradient-to-r from-amber-600 to-amber-700 text-white rounded-2xl shadow-md">
                     <FaMoneyBillWave className="text-3xl" />
                   </div>
                   <div>
-                    <h3 className="text-4xl font-black text-purple-900">₹{highestStipend.toLocaleString()}<span className="text-sm font-semibold text-purple-500"> /mo</span></h3>
-                    <p className="text-sm text-purple-700 font-semibold mt-1">Top tier technical internship offer</p>
+                    <h3 className="text-3xl font-extrabold text-amber-950">₹{highestStipend.toLocaleString()}<span className="text-xs font-semibold text-amber-700"> /mo</span></h3>
+                    <p className="text-xs text-amber-800 font-bold mt-1">Top tier technical internship stipend offer</p>
                   </div>
                 </div>
               </div>
-              <div className="mt-6 border-t border-gray-100 pt-6">
-                <h5 className="font-bold text-gray-800 mb-3">Stipends by Branch</h5>
-                <div className="space-y-3">
+              <div className="border-t border-stone-200/80 pt-6 space-y-3">
+                <h5 className="font-bold text-xs uppercase tracking-wider text-stone-900">Stipends by Branch</h5>
+                <div className="space-y-2.5">
                   {stats.map(s => (
-                    <div key={s.branch} className="flex justify-between items-center text-sm">
-                      <span className="font-semibold text-gray-700">{s.branch} Avg Stipend</span>
-                      <span className="font-bold text-purple-700">₹{s.avgStipend.toLocaleString()}/mo</span>
+                    <div key={s.branch} className="flex justify-between items-center text-xs">
+                      <span className="font-semibold text-stone-700">{s.branch} Avg Stipend</span>
+                      <span className="font-bold text-amber-700">₹{s.avgStipend.toLocaleString()}/mo</span>
                     </div>
                   ))}
                 </div>

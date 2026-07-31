@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Button from 'react-bootstrap/Button';
-import FloatingLabel from 'react-bootstrap/FloatingLabel';
-import Form from 'react-bootstrap/Form';
 import Toast from '../Toast';
 import ModalBox from '../Modal';
+import { FaBuilding, FaGlobe, FaMapMarkerAlt, FaTags, FaAlignLeft, FaUserTie, FaPhone, FaEnvelope, FaLinkedin, FaPlusCircle } from 'react-icons/fa';
+
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 function AddCompany() {
@@ -14,48 +13,49 @@ function AddCompany() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
   const { companyId } = useParams();
 
-  // useState for toast display
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-
-  // useState for Modal display
   const [showModal, setShowModal] = useState(false);
+  const [data, setData] = useState({});
 
-  const [data, setData] = useState();
-
-  const closeModal = () => {
-    setShowModal(false);
-  };
+  const closeModal = () => setShowModal(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!data?.companyName || !data?.companyDescription || !data?.category || !data?.companyLocation || !data?.companyWebsite || !data?.hrName || !data?.hrPhone || !data?.hrEmail || !data?.hrLinkedin)
+    if (
+      !data?.companyName ||
+      !data?.companyDescription ||
+      !data?.category ||
+      !data?.companyLocation ||
+      !data?.companyWebsite ||
+      !data?.hrName ||
+      !data?.hrPhone ||
+      !data?.hrEmail ||
+      !data?.hrLinkedin
+    )
       return setError("All Fields Required!");
     setShowModal(true);
-  }
+  };
 
   const confirmSubmit = async () => {
     const url = companyId
       ? `${BASE_URL}/company/update-company?companyId=${companyId}`
       : `${BASE_URL}/company/add-company`;
     try {
-      const response = await axios.post(url, data,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          }
+      const response = await axios.post(url, data, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         }
-      )
+      });
       if (response?.status === 201) {
         setShowModal(false);
         setToastMessage(response?.data?.msg);
         const dataToPass = {
           showToastPass: true,
           toastMessagePass: response?.data?.msg
-        }
+        };
         navigate('../tpo/companys', { state: dataToPass });
       }
     } catch (error) {
@@ -64,7 +64,7 @@ function AddCompany() {
       setToastMessage(error?.response?.data?.msg);
       setShowToast(true);
     }
-  }
+  };
 
   const fetchCompanyData = async () => {
     try {
@@ -75,26 +75,21 @@ function AddCompany() {
     } finally {
       setLoading(false);
     }
-  }
-
-  useEffect(() => { if (companyId) fetchCompanyData() }, [companyId])
-
+  };
 
   useEffect(() => {
-    if (!companyId) setLoading(false);
-  }, [])
-
+    if (companyId) fetchCompanyData();
+    else setLoading(false);
+  }, [companyId]);
 
   const handleDataChange = (e) => {
     setError('');
-    setData({ ...data, [e.target.name]: e.target.value })
-  }
-
+    setData({ ...data, [e.target.name]: e.target.value });
+  };
 
   return (
     <>
-      {/*  any message here  */}
-      < Toast
+      <Toast
         show={showToast}
         onClose={() => setShowToast(false)}
         message={toastMessage}
@@ -102,185 +97,251 @@ function AddCompany() {
         position="bottom-end"
       />
 
-      {
-        loading ? (
-          <div className="flex justify-center h-72 items-center">
-            <i className="fa-solid fa-spinner fa-spin text-3xl" />
-          </div>
-        ) : (
-          <>
-            <Form onSubmit={handleSubmit}>
-              <div className="my-8 text-base backdrop-blur-md bg-white/30 border border-white/20 rounded-lg shadow shadow-red-400 p-6 max-sm:text-sm max-sm:p-3">
-                <div className="flex flex-col gap-2">
-                  <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1">
-                    <FloatingLabel controlId="floatingCompanyName" label={
-                      <>
-                        <span>Company Name <span className='text-red-500'>*</span></span>
-                      </>
-                    }>
-                      <Form.Control
+      {loading ? (
+        <div className="flex justify-center h-72 items-center">
+          <div className="w-8 h-8 rounded-full border-3 border-amber-600 border-t-transparent animate-spin" />
+        </div>
+      ) : (
+        <div className="max-w-4xl mx-auto py-8">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Section 1: Company Information */}
+            <div className="bg-white rounded-3xl border border-stone-200/80 shadow-xl overflow-hidden">
+              <div className="bg-stone-900 text-white p-6 sm:p-8 border-b border-stone-800 relative">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 to-amber-700" />
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-600/20 text-amber-400 border border-amber-500/30 flex items-center justify-center text-lg">
+                    <FaBuilding />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold tracking-tight">
+                      {companyId ? 'Update Company Profile' : 'Company Information'}
+                    </h2>
+                    <p className="text-xs text-stone-400 mt-0.5">
+                      Enter corporate identity, website URL, location, and recruitment tier.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 sm:p-8 space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {/* Company Name */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1.5">
+                      Company Name <span className="text-amber-600">*</span>
+                    </label>
+                    <div className="relative">
+                      <FaBuilding className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs" />
+                      <input
                         type="text"
-                        placeholder="Company Name"
-                        name='companyName'
+                        placeholder="e.g. Google, TCS, Zscaler"
+                        name="companyName"
                         value={data?.companyName || ''}
                         onChange={handleDataChange}
-
+                        className="w-full pl-9 pr-4 py-3 text-sm rounded-xl bg-stone-50 border border-stone-200 text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
                       />
-                    </FloatingLabel>
-                    <FloatingLabel controlId="floatingCompanyLocation" label={
-                      <>
-                        <span>Company Location <span className='text-red-500'>*</span></span>
-                      </>
-                    }>
-                      <Form.Control
+                    </div>
+                  </div>
+
+                  {/* Company Location */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1.5">
+                      Company Location <span className="text-amber-600">*</span>
+                    </label>
+                    <div className="relative">
+                      <FaMapMarkerAlt className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs" />
+                      <input
                         type="text"
-                        placeholder="Company Location"
-                        name='companyLocation'
+                        placeholder="e.g. Bangalore, Hyderabad"
+                        name="companyLocation"
                         value={data?.companyLocation || ''}
                         onChange={handleDataChange}
-
+                        className="w-full pl-9 pr-4 py-3 text-sm rounded-xl bg-stone-50 border border-stone-200 text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
                       />
-                    </FloatingLabel>
+                    </div>
                   </div>
-                  <FloatingLabel controlId="floatingCompanyWebsite" label={
-                    <>
-                      <span>Company Website <span className='text-red-500'>*</span></span>
-                    </>
-                  }>
-                    <Form.Control
-                      type="link"
-                      placeholder="Company Website"
-                      name='companyWebsite'
-                      value={data?.companyWebsite || ''}
-                      onChange={handleDataChange}
 
-                    />
-                  </FloatingLabel>
-                  <FloatingLabel controlId="floatingSelectCategory" label={
-                    <>
-                      <span>Company Category <span className='text-red-500'>*</span></span>
-                    </>
-                  }>
-                    <Form.Select
-                      aria-label="Floating label select category"
-                      className='cursor-pointer'
-                      name='category'
-                      value={data?.category || ''}
-                      onChange={handleDataChange}
+                  {/* Company Website */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1.5">
+                      Company Website <span className="text-amber-600">*</span>
+                    </label>
+                    <div className="relative">
+                      <FaGlobe className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs" />
+                      <input
+                        type="url"
+                        placeholder="https://company.com"
+                        name="companyWebsite"
+                        value={data?.companyWebsite || ''}
+                        onChange={handleDataChange}
+                        className="w-full pl-9 pr-4 py-3 text-sm rounded-xl bg-stone-50 border border-stone-200 text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                      />
+                    </div>
+                  </div>
 
-                    >
-                      <option disabled value='' className='text-gray-400'>Enter Company Category</option>
-                      <option value="Generic">Generic</option>
-                      <option value="Core">Core</option>
-                      <option value="Dream">Dream</option>
-                    </Form.Select>
-                  </FloatingLabel>
-                  <FloatingLabel controlId="floatingcompanyDescription" label={
-                    <>
-                      <span>Company Description <span className='text-red-500'>*</span></span>
-                    </>
-                  }>
-                    <Form.Control
-                      as="textarea"
-                      placeholder="Company Description"
-                      name='companyDescription'
-                      style={{ height: '100px', maxHeight: "450px" }}
-                      value={data?.companyDescription || ''}
-                      onChange={handleDataChange}
-
-                    />
-                  </FloatingLabel>
-
-                  <div className="mt-4 border-t pt-4">
-                    <h5 className="text-lg font-semibold text-gray-800 mb-3">HR Contact Details</h5>
-                    <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1">
-                      <FloatingLabel controlId="floatingHrName" label={
-                        <>
-                          <span>HR Name <span className='text-red-500'>*</span></span>
-                        </>
-                      }>
-                        <Form.Control
-                          type="text"
-                          placeholder="HR Name"
-                          name='hrName'
-                          value={data?.hrName || ''}
-                          onChange={handleDataChange}
-                        />
-                      </FloatingLabel>
-                      <FloatingLabel controlId="floatingHrPhone" label={
-                        <>
-                          <span>HR Phone <span className='text-red-500'>*</span></span>
-                        </>
-                      }>
-                        <Form.Control
-                          type="text"
-                          placeholder="HR Phone"
-                          name='hrPhone'
-                          value={data?.hrPhone || ''}
-                          onChange={handleDataChange}
-                        />
-                      </FloatingLabel>
-                      <FloatingLabel controlId="floatingHrEmail" label={
-                        <>
-                          <span>HR Email <span className='text-red-500'>*</span></span>
-                        </>
-                      }>
-                        <Form.Control
-                          type="email"
-                          placeholder="HR Email"
-                          name='hrEmail'
-                          value={data?.hrEmail || ''}
-                          onChange={handleDataChange}
-                        />
-                      </FloatingLabel>
-                      <FloatingLabel controlId="floatingHrLinkedin" label={
-                        <>
-                          <span>HR LinkedIn <span className='text-red-500'>*</span></span>
-                        </>
-                      }>
-                        <Form.Control
-                          type="url"
-                          placeholder="HR LinkedIn Profile Link"
-                          name='hrLinkedin'
-                          value={data?.hrLinkedin || ''}
-                          onChange={handleDataChange}
-                        />
-                      </FloatingLabel>
+                  {/* Company Category */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1.5">
+                      Company Category <span className="text-amber-600">*</span>
+                    </label>
+                    <div className="relative">
+                      <FaTags className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs" />
+                      <select
+                        name="category"
+                        value={data?.category || ''}
+                        onChange={handleDataChange}
+                        className="w-full pl-9 pr-4 py-3 text-sm rounded-xl bg-stone-50 border border-stone-200 text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all cursor-pointer appearance-none"
+                      >
+                        <option value="" disabled>Select Company Category</option>
+                        <option value="Generic">Generic Tier</option>
+                        <option value="Core">Core Engineering</option>
+                        <option value="Dream">Dream Category</option>
+                      </select>
                     </div>
                   </div>
                 </div>
-                {
-                  error &&
-                  <div className="flex pt-2">
-                    <span className='text-red-500'>{error}</span>
+
+                {/* Company Description */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1.5">
+                    Company Description <span className="text-amber-600">*</span>
+                  </label>
+                  <div className="relative">
+                    <FaAlignLeft className="absolute left-3.5 top-4 text-stone-400 text-xs" />
+                    <textarea
+                      placeholder="Brief overview of company business domain, tech stack, and workplace culture..."
+                      name="companyDescription"
+                      rows={4}
+                      value={data?.companyDescription || ''}
+                      onChange={handleDataChange}
+                      className="w-full pl-9 pr-4 py-3 text-sm rounded-xl bg-stone-50 border border-stone-200 text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all resize-y"
+                    />
                   </div>
-                }
+                </div>
               </div>
-              <div className="flex flex-col justify-center items-center gap-2">
-                <Button variant="primary" type='submit' size='lg'>
-                  {
-                    companyId
-                      ? 'Update Company'
-                      : 'Add Company'
-                  }
-                </Button>
+            </div>
+
+            {/* Section 2: HR Contact Details */}
+            <div className="bg-white rounded-3xl border border-stone-200/80 shadow-xl overflow-hidden">
+              <div className="bg-stone-900 text-white p-6 sm:p-8 border-b border-stone-800 relative">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 to-amber-700" />
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-600/20 text-amber-400 border border-amber-500/30 flex items-center justify-center text-lg">
+                    <FaUserTie />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold tracking-tight">HR Contact Details</h2>
+                    <p className="text-xs text-stone-400 mt-0.5">
+                      Direct point of contact details for placement coordination.
+                    </p>
+                  </div>
+                </div>
               </div>
-            </Form>
-          </>
-        )
-      }
 
+              <div className="p-6 sm:p-8 space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {/* HR Name */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1.5">
+                      HR Name <span className="text-amber-600">*</span>
+                    </label>
+                    <div className="relative">
+                      <FaUserTie className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs" />
+                      <input
+                        type="text"
+                        placeholder="HR Manager's Full Name"
+                        name="hrName"
+                        value={data?.hrName || ''}
+                        onChange={handleDataChange}
+                        className="w-full pl-9 pr-4 py-3 text-sm rounded-xl bg-stone-50 border border-stone-200 text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                      />
+                    </div>
+                  </div>
 
-      {/* ModalBox Component for Delete Confirmation */}
+                  {/* HR Phone */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1.5">
+                      HR Phone <span className="text-amber-600">*</span>
+                    </label>
+                    <div className="relative">
+                      <FaPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs" />
+                      <input
+                        type="text"
+                        placeholder="HR Phone Number"
+                        name="hrPhone"
+                        value={data?.hrPhone || ''}
+                        onChange={handleDataChange}
+                        className="w-full pl-9 pr-4 py-3 text-sm rounded-xl bg-stone-50 border border-stone-200 text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {/* HR Email */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1.5">
+                      HR Email <span className="text-amber-600">*</span>
+                    </label>
+                    <div className="relative">
+                      <FaEnvelope className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs" />
+                      <input
+                        type="email"
+                        placeholder="hr@company.com"
+                        name="hrEmail"
+                        value={data?.hrEmail || ''}
+                        onChange={handleDataChange}
+                        className="w-full pl-9 pr-4 py-3 text-sm rounded-xl bg-stone-50 border border-stone-200 text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {/* HR LinkedIn */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1.5">
+                      HR LinkedIn <span className="text-amber-600">*</span>
+                    </label>
+                    <div className="relative">
+                      <FaLinkedin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs" />
+                      <input
+                        type="url"
+                        placeholder="https://linkedin.com/in/username"
+                        name="hrLinkedin"
+                        value={data?.hrLinkedin || ''}
+                        onChange={handleDataChange}
+                        className="w-full pl-9 pr-4 py-3 text-sm rounded-xl bg-stone-50 border border-stone-200 text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {error && (
+                  <p className="text-xs text-red-500 font-bold mt-2">{error}</p>
+                )}
+
+                <div className="pt-4">
+                  <button
+                    type="submit"
+                    className="w-full py-4 px-8 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold text-base shadow-lg shadow-amber-600/20 hover:shadow-xl transition-all cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <FaPlusCircle />
+                    <span>{companyId ? 'Update Company Details' : 'Add Company Details'}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      )}
+
       <ModalBox
         show={showModal}
         close={closeModal}
-        header={"Confirmation"}
-        body={`Do you want to add company ${data?.companyName}?`}
-        btn={"Post"}
+        header={"Confirm Company Registration"}
+        body={`Do you want to ${companyId ? 'update' : 'add'} company details for ${data?.companyName}?`}
+        btn={companyId ? "Update" : "Save Company"}
         confirmAction={confirmSubmit}
       />
     </>
-  )
+  );
 }
-export default AddCompany
+
+export default AddCompany;

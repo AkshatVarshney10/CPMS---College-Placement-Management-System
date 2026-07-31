@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { FaFileExcel, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaFileExcel, FaChevronDown, FaChevronUp, FaTable, FaGraduationCap } from 'react-icons/fa';
 import Toast from '../Toast';
 import * as XLSX from 'xlsx';
 
@@ -15,7 +15,6 @@ const DetailedPlacementStats = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   
-  // State for expanded accordions
   const [expandedBatches, setExpandedBatches] = useState({});
   const [expandedBranches, setExpandedBranches] = useState({});
 
@@ -33,13 +32,12 @@ const DetailedPlacementStats = () => {
         
         setStats(response.data.detailedStats || {});
         
-        // Keep all batches and branches closed by default
         const initBatches = {};
         const initBranches = {};
         Object.keys(response.data.detailedStats || {}).forEach(batch => {
-          initBatches[batch] = false;
+          initBatches[batch] = true; // Open batches by default for quick view
           Object.keys(response.data.detailedStats[batch]).forEach(branch => {
-            initBranches[`${batch}-${branch}`] = false;
+            initBranches[`${batch}-${branch}`] = true; // Open branches by default
           });
         });
         setExpandedBatches(initBatches);
@@ -65,7 +63,6 @@ const DetailedPlacementStats = () => {
 
   const handleExportExcel = () => {
     try {
-      // Flatten data for Excel
       const exportData = [];
       
       Object.keys(stats).sort().forEach(batch => {
@@ -100,7 +97,6 @@ const DetailedPlacementStats = () => {
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Detailed_Placement_Stats");
       
-      // Auto-size columns loosely based on header length
       const wscols = Object.keys(exportData[0]).map(key => ({ wch: Math.max(key.length, 15) }));
       worksheet['!cols'] = wscols;
 
@@ -118,20 +114,20 @@ const DetailedPlacementStats = () => {
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center h-96 gap-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-indigo-600"></div>
-        <p className="text-gray-600 font-medium animate-pulse">Loading Detailed Report...</p>
+        <div className="w-10 h-10 rounded-full border-4 border-amber-600 border-t-transparent animate-spin" />
+        <p className="text-stone-500 font-medium text-xs animate-pulse">Loading Detailed Placement Records...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-6 my-4 text-center">
-        <h4 className="font-semibold text-lg mb-2">Error Loading Report</h4>
-        <p className="mb-4">{error}</p>
+      <div className="bg-rose-50 border border-rose-200 text-rose-800 rounded-3xl p-8 my-4 text-center max-w-xl mx-auto space-y-4">
+        <h4 className="font-bold text-lg">Error Loading Report</h4>
+        <p className="text-xs">{error}</p>
         <button 
           onClick={() => window.location.reload()} 
-          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-medium transition"
+          className="px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs transition cursor-pointer"
         >
           Retry
         </button>
@@ -140,7 +136,7 @@ const DetailedPlacementStats = () => {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
+    <div className="max-w-7xl mx-auto space-y-8 pb-12">
       <Toast
         show={showToast}
         onClose={() => setShowToast(false)}
@@ -149,57 +145,69 @@ const DetailedPlacementStats = () => {
         position="bottom-end"
       />
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gradient-to-r from-blue-800 via-indigo-900 to-blue-950 rounded-2xl p-6 text-white shadow-xl gap-4">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">Detailed Placement Tracker</h2>
-          <p className="text-indigo-200 mt-1 text-sm sm:text-base">Batch & Branch-wise Placement Records</p>
+      {/* Hero Title Banner */}
+      <div className="relative rounded-3xl bg-gradient-to-br from-stone-900 via-stone-850 to-stone-900 p-8 sm:p-10 border border-stone-800 shadow-2xl overflow-hidden text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-amber-600 to-amber-700" />
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-600/20 text-amber-400 text-xs font-semibold border border-amber-500/30">
+            <FaTable className="text-xs" /> Detailed Student-Level Ledger
+          </div>
+          <h2 className="text-3xl font-extrabold tracking-tight">Detailed Placement Tracker</h2>
+          <p className="text-stone-400 text-xs sm:text-sm max-w-xl">
+            Granular batch & branch-wise placement audit records with company offers and CTC details.
+          </p>
         </div>
         <button
           onClick={handleExportExcel}
-          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-5 py-2.5 rounded-xl shadow-lg transition duration-300 transform hover:-translate-y-0.5 text-sm sm:text-base border-none"
+          className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold px-5 py-3 rounded-xl shadow-lg shadow-amber-600/20 transition-all cursor-pointer text-xs sm:text-sm shrink-0"
         >
-          <FaFileExcel className="text-lg" />
-          <span>Export Excel</span>
+          <FaFileExcel className="text-sm" />
+          <span>Export Excel Report</span>
         </button>
       </div>
 
       {Object.keys(stats).length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center text-gray-500">
+        <div className="bg-white rounded-3xl shadow-xs border border-stone-200/80 p-12 text-center text-stone-400 font-medium">
           No detailed placement records found.
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-8">
           {Object.keys(stats).sort((a,b) => b.localeCompare(a)).map(batch => (
-            <div key={batch} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-              {/* Batch Header */}
+            <div key={batch} className="bg-white rounded-3xl border border-stone-200/80 shadow-xs overflow-hidden">
+              {/* Batch Accordion Header */}
               <div 
-                className="bg-gray-100 p-4 flex justify-between items-center cursor-pointer hover:bg-gray-200 transition-colors"
+                className="bg-stone-900 text-white p-5 sm:p-6 flex justify-between items-center cursor-pointer hover:bg-stone-850 transition-colors border-b border-stone-800"
                 onClick={() => toggleBatch(batch)}
               >
-                <h3 className="text-xl font-bold text-gray-800">{batch}</h3>
-                <div className="text-gray-500">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-amber-600/20 text-amber-400 border border-amber-500/30 flex items-center justify-center text-base">
+                    <FaGraduationCap />
+                  </div>
+                  <h3 className="text-lg font-bold tracking-tight">{batch} Cohort</h3>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-stone-800 flex items-center justify-center text-stone-400 text-xs">
                   {expandedBatches[batch] ? <FaChevronUp /> : <FaChevronDown />}
                 </div>
               </div>
 
               {/* Branches within Batch */}
               {expandedBatches[batch] && (
-                <div className="p-4 space-y-4">
+                <div className="p-6 space-y-6">
                   {Object.keys(stats[batch]).sort().map(branch => {
                     const isBranchExpanded = expandedBranches[`${batch}-${branch}`];
                     return (
-                      <div key={branch} className="border border-indigo-100 rounded-lg overflow-hidden">
-                        {/* Branch Header */}
+                      <div key={branch} className="border border-stone-200/80 rounded-2xl overflow-hidden shadow-2xs">
+                        {/* Branch Sub-Header */}
                         <div 
-                          className="bg-indigo-50 p-3 flex justify-between items-center cursor-pointer hover:bg-indigo-100 transition-colors"
+                          className="bg-stone-50 p-4 flex justify-between items-center cursor-pointer hover:bg-amber-50/50 transition-colors"
                           onClick={() => toggleBranch(batch, branch)}
                         >
-                          <h4 className="text-lg font-semibold text-indigo-900">{branch}</h4>
+                          <h4 className="text-sm font-bold text-stone-900 tracking-tight">{branch} Department</h4>
                           <div className="flex items-center gap-3">
-                            <span className="text-xs font-medium text-indigo-600 bg-indigo-200/50 px-2.5 py-1 rounded-full">
-                              {stats[batch][branch].length} Students
+                            <span className="text-[11px] font-bold text-amber-800 bg-amber-100 border border-amber-200 px-3 py-0.5 rounded-full">
+                              {stats[batch][branch].length} Students Record
                             </span>
-                            <div className="text-indigo-500">
+                            <div className="text-stone-400 text-xs">
                               {isBranchExpanded ? <FaChevronUp /> : <FaChevronDown />}
                             </div>
                           </div>
@@ -208,48 +216,60 @@ const DetailedPlacementStats = () => {
                         {/* Branch Table */}
                         {isBranchExpanded && (
                           <div className="overflow-x-auto w-full">
-                            <table className="w-full min-w-max text-left border-collapse">
+                            <table className="w-full text-left border-collapse text-xs">
                               <thead>
-                                <tr className="bg-gray-50 text-xs uppercase tracking-wider text-gray-600 border-b border-gray-200">
-                                  <th className="p-3 font-semibold whitespace-nowrap sticky left-0 bg-gray-50 z-10 border-r border-gray-200 shadow-[2px_0_4px_rgba(0,0,0,0.02)]">Roll No.</th>
-                                  <th className="p-3 font-semibold whitespace-nowrap sticky left-[80px] sm:left-[100px] bg-gray-50 z-10 border-r border-gray-200 shadow-[2px_0_4px_rgba(0,0,0,0.02)]">Student Name</th>
-                                  <th className="p-3 font-semibold whitespace-nowrap">Remark</th>
-                                  <th className="p-3 font-semibold whitespace-nowrap">Company</th>
-                                  <th className="p-3 font-semibold whitespace-nowrap text-center">Package (LPA)</th>
-                                  <th className="p-3 font-semibold whitespace-nowrap text-center">Monthly Stipend (INR)</th>
-                                  <th className="p-3 font-semibold whitespace-nowrap">Designation / Role</th>
-                                  <th className="p-3 font-semibold whitespace-nowrap">Campus Type</th>
-                                  <th className="p-3 font-semibold whitespace-nowrap text-center">Multiple Offers?</th>
-                                  <th className="p-3 font-semibold whitespace-nowrap">2nd Company</th>
-                                  <th className="p-3 font-semibold whitespace-nowrap text-center">2nd Package (LPA)</th>
+                                <tr className="bg-stone-900 text-stone-300 font-semibold uppercase tracking-wider text-[11px] border-b border-stone-800">
+                                  <th className="py-3 px-4 w-24">Roll No.</th>
+                                  <th className="py-3 px-4">Student Name</th>
+                                  <th className="py-3 px-4 text-center">Remark</th>
+                                  <th className="py-3 px-4">Company</th>
+                                  <th className="py-3 px-4 text-center">Package (LPA)</th>
+                                  <th className="py-3 px-4 text-center">Stipend (INR/mo)</th>
+                                  <th className="py-3 px-4">Designation</th>
+                                  <th className="py-3 px-4 text-center">Campus</th>
+                                  <th className="py-3 px-4 text-center">Multiple?</th>
+                                  <th className="py-3 px-4">2nd Company</th>
+                                  <th className="py-3 px-4 text-center">2nd Package</th>
                                 </tr>
                               </thead>
-                              <tbody className="divide-y divide-gray-100 text-sm">
+                              <tbody className="divide-y divide-stone-200/70 text-stone-700 bg-white">
                                 {stats[batch][branch].map((student, idx) => (
-                                  <tr key={idx} className="hover:bg-blue-50/30 transition-colors">
-                                    <td className="p-3 font-medium text-gray-900 sticky left-0 bg-white group-hover:bg-blue-50/30 z-10 border-r border-gray-100">
+                                  <tr key={idx} className="hover:bg-amber-50/40 transition-colors">
+                                    <td className="py-3 px-4 font-mono font-medium text-stone-900">
                                       {student.rollNumber}
                                     </td>
-                                    <td className="p-3 font-medium text-gray-800 sticky left-[80px] sm:left-[100px] bg-white group-hover:bg-blue-50/30 z-10 border-r border-gray-100">
+                                    <td className="py-3 px-4 font-bold text-stone-900">
                                       {student.studentName}
                                     </td>
-                                    <td className="p-3">
-                                      <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${student.remark === 'Placed' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                                    <td className="py-3 px-4 text-center">
+                                      <span className={`px-2.5 py-0.5 text-[11px] font-bold rounded-full border ${
+                                        student.remark === 'Placed' 
+                                          ? 'bg-emerald-100 text-emerald-800 border-emerald-200' 
+                                          : 'bg-rose-100 text-rose-800 border-rose-200'
+                                      }`}>
                                         {student.remark}
                                       </span>
                                     </td>
-                                    <td className="p-3 text-gray-700">{student.company}</td>
-                                    <td className="p-3 text-center font-medium text-emerald-700">{student.packageLPA}</td>
-                                    <td className="p-3 text-center text-purple-700 font-medium">{student.monthlyStipend}</td>
-                                    <td className="p-3 text-gray-600">{student.designation}</td>
-                                    <td className="p-3 text-xs font-medium text-gray-600">{student.campusType}</td>
-                                    <td className="p-3 text-center">
-                                      <span className={`px-2 py-0.5 text-xs font-semibold rounded-md ${student.multipleOffers === 'Yes' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-600'}`}>
-                                        {student.multipleOffers}
+                                    <td className="py-3 px-4 font-semibold text-stone-800">{student.company || '—'}</td>
+                                    <td className="py-3 px-4 text-center font-extrabold text-emerald-700">
+                                      {student.packageLPA ? `${student.packageLPA} LPA` : '—'}
+                                    </td>
+                                    <td className="py-3 px-4 text-center font-bold text-purple-700">
+                                      {student.monthlyStipend ? `₹${student.monthlyStipend}` : '—'}
+                                    </td>
+                                    <td className="py-3 px-4 text-stone-600 font-medium">{student.designation || '—'}</td>
+                                    <td className="py-3 px-4 text-center font-medium text-stone-600">{student.campusType || '—'}</td>
+                                    <td className="py-3 px-4 text-center">
+                                      <span className={`px-2 py-0.5 text-[11px] font-bold rounded-full border ${
+                                        student.multipleOffers === 'Yes' 
+                                          ? 'bg-amber-100 text-amber-800 border-amber-200' 
+                                          : 'bg-stone-100 text-stone-600 border-stone-200'
+                                      }`}>
+                                        {student.multipleOffers || 'No'}
                                       </span>
                                     </td>
-                                    <td className="p-3 text-gray-500 text-xs">{student.secondCompany}</td>
-                                    <td className="p-3 text-center font-medium text-emerald-600/80 text-xs">{student.secondPackageLPA}</td>
+                                    <td className="py-3 px-4 text-stone-500 font-medium">{student.secondCompany || '—'}</td>
+                                    <td className="py-3 px-4 text-center font-bold text-emerald-700/80">{student.secondPackageLPA ? `${student.secondPackageLPA} LPA` : '—'}</td>
                                   </tr>
                                 ))}
                               </tbody>

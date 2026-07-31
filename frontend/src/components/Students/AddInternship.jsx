@@ -1,32 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Button from 'react-bootstrap/Button';
-import FloatingLabel from 'react-bootstrap/FloatingLabel';
-import Form from 'react-bootstrap/Form';
+import { 
+  FaBuilding, FaGlobe, FaMapMarkerAlt, FaBriefcase, 
+  FaCalendarAlt, FaMoneyBillWave, FaSave, FaPlusCircle 
+} from 'react-icons/fa';
 import Toast from '../Toast';
 import ModalBox from '../Modal';
+import SkeletonLoader from '../SkeletonLoader';
+
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 function AddInternship() {
-  document.title = 'CPMS | Add Internships';
+  document.title = 'CPMS | Add Internship';
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const { internshipId } = useParams();
   const navigate = useNavigate();
 
-  // useState for toast display
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
-  // useState for Modal display
   const [showModal, setShowModal] = useState(false);
   const [modalBody, setModalBody] = useState('');
 
   const closeModal = () => setShowModal(false);
-
-  // store internship info
   const [internship, setInternship] = useState({});
-
   const [currentUserData, setCurrentUserData] = useState('');
 
   useEffect(() => {
@@ -34,109 +33,97 @@ function AddInternship() {
       try {
         const token = localStorage.getItem('token');
         const response = await axios.get(`${BASE_URL}/user/detail`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          }
+          headers: { Authorization: `Bearer ${token}` }
         });
         setCurrentUserData({ id: response.data.id });
         if (!internshipId) setLoading(false);
       } catch (error) {
-        console.log("addinternship.jsx => ", error);
+        console.error("AddInternship.jsx => ", error);
       }
-    }
+    };
     fetchCurrentUserData();
   }, []);
 
   const fetchInternshipData = async () => {
     try {
-      // if no studentId or internshipId then return back none 
       if (!currentUserData?.id || !internshipId) return;
       const response = await axios.get(`${BASE_URL}/student/internship?studentId=${currentUserData?.id}&internshipId=${internshipId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      // console.log(response?.data);
-      setInternship(response.data.internship);
-      setModalBody(response.data.internship.companyName);
-      if (response?.data?.msg) {
-        setToastMessage(response?.data?.msg);
-        setShowToast(true);
-      }
+      setInternship(response.data.internship || {});
+      setModalBody(response.data.internship?.companyName || '');
     } catch (error) {
-      console.log("error while updating internship ", error);
-      if (error.response?.data?.msg) {
-        setToastMessage(error?.response?.data?.msg);
-      } else {
-        setToastMessage("Error while updating internship please try again later!");
-      }
+      console.error("Error while fetching internship detail:", error);
+      setToastMessage("Error loading internship details");
       setShowToast(true);
     } finally {
       setLoading(false);
     }
-  }
-
-  const handleDataChange = (e) => {
-    setInternship({ ...internship, [e.target.name]: e.target.value });
-    if (e.target.name === "companyName")
-      setModalBody(e.target.value);
-  }
-
-  // for formating date of birth
-  const formatDate = (isoString) => {
-    if (!isoString || isoString === "undefined") return "";
-    const date = new Date(isoString);
-    return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD
   };
-
-  const handleSubmit = () => {
-    if (!internship?.companyName || !internship?.internshipDuration || !internship?.startDate || !internship?.type) {
-      setToastMessage('Star Marked Required!');
-      setShowToast(true);
-      return;
-    }
-    setShowModal(true);
-  }
-
-  const confirmSubmit = async () => {
-    try {
-      const response = await axios.post(`${BASE_URL}/student/update-internship?studentId=${currentUserData?.id}&internshipId=${internshipId}`, { internship }, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        }
-      });
-      // console.log(response?.data);
-      if (response?.data?.msg) {
-        setToastMessage(response?.data?.msg);
-        setShowToast(true);
-        if (response?.data?.msg === "Internship Updated Successfully!") {
-          const dataToPass = {
-            showToastPass: true,
-            toastMessagePass: response?.data?.msg
-          }
-          navigate('/student/internship', { state: dataToPass })
-        }
-      }
-    } catch (error) {
-      console.log("error while updating internship ", error);
-      if (error.response?.data?.msg) {
-        setToastMessage(error?.response?.data?.msg);
-      } else {
-        setToastMessage("Error while updating internship please try again later!");
-      }
-      setShowToast(true);
-    }
-    setShowModal(false);
-  }
-
 
   useEffect(() => {
     fetchInternshipData();
   }, [currentUserData?.id]);
 
+  const handleDataChange = (e) => {
+    setInternship({ ...internship, [e.target.name]: e.target.value });
+    if (e.target.name === "companyName") setModalBody(e.target.value);
+  };
+
+  const formatDate = (isoString) => {
+    if (!isoString || isoString === "undefined") return "";
+    const date = new Date(isoString);
+    return date.toISOString().split('T')[0];
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!internship?.companyName || !internship?.internshipDuration || !internship?.startDate || !internship?.type) {
+      setToastMessage('Please fill all mandatory fields marked with (*)');
+      setShowToast(true);
+      return;
+    }
+    setShowModal(true);
+  };
+
+  const confirmSubmit = async () => {
+    try {
+      setSaving(true);
+      const response = await axios.post(
+        `${BASE_URL}/student/update-internship?studentId=${currentUserData?.id}&internshipId=${internshipId || ''}`, 
+        { internship }, 
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      );
+
+      if (response?.data?.msg) {
+        setToastMessage(response.data.msg);
+        setShowToast(true);
+        if (response.data.msg.includes("Successfully")) {
+          navigate('/student/internship', { 
+            state: { showToastPass: true, toastMessagePass: response.data.msg } 
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error updating internship:", error);
+      setToastMessage(error.response?.data?.msg || "Error while saving internship. Please try again.");
+      setShowToast(true);
+    } finally {
+      setSaving(false);
+      setShowModal(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto space-y-6 pb-12">
+        <SkeletonLoader type="card" count={2} />
+      </div>
+    );
+  }
+
   return (
-    <>
-      {/* Toast Component */}
+    <div className="max-w-7xl mx-auto space-y-8 pb-16">
       <Toast
         show={showToast}
         onClose={() => setShowToast(false)}
@@ -145,149 +132,251 @@ function AddInternship() {
         position="bottom-end"
       />
 
-      {
-        loading ? (
-          <div className="flex justify-center h-72 items-center">
-            <i className="fa-solid fa-spinner fa-spin text-3xl" />
+      {/* Header Title Banner */}
+      <div className="relative rounded-3xl bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 p-8 sm:p-10 border border-slate-800 shadow-2xl overflow-hidden text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-amber-500 to-orange-500" />
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 text-xs font-semibold border border-amber-500/30">
+            <FaBriefcase className="text-xs" /> Industrial Training Ledger
           </div>
-        ) : (
-          <>
-            <div className="my-8 backdrop-blur-md bg-white/30 border border-white/20 rounded-lg shadow shadow-red-400 p-6">
-              <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1">
-                <FloatingLabel controlId="floatingCompanyName" label={
-                  <>
-                    <span>Company Name <span style={{ color: 'red' }}>*</span></span>
-                  </>
-                }>
-                  <Form.Control
-                    type="text"
-                    placeholder="Company Name"
-                    name='companyName'
-                    value={internship?.companyName || ""}
-                    onChange={handleDataChange}
-                  />
-                </FloatingLabel >
-                <FloatingLabel controlId="floatingCompanyWebsite" label="Company Website">
-                  <Form.Control
-                    type="link"
-                    placeholder="Company Website"
-                    name='companyWebsite'
-                    value={internship?.companyWebsite || ""}
-                    onChange={handleDataChange}
-                  />
-                </FloatingLabel>
-                <FloatingLabel controlId="floatingInternshipDuration" label={
-                  <>
-                    <span>Internship Duration In Days <span style={{ color: 'red' }}>*</span></span>
-                  </>
-                }
-                >
-                  <Form.Control
-                    type="number"
-                    step={1}
-                    placeholder="Internship Duration"
-                    name='internshipDuration'
-                    value={internship?.internshipDuration || ""}
-                    onChange={handleDataChange}
-                  />
-                </FloatingLabel>
-                <FloatingLabel controlId="floatingMonthlyStipend" label="Monthly Stipend in Rupees">
-                  <Form.Control
-                    type="number"
-                    step={500}
-                    placeholder="Monthly Stipend in Rupees"
-                    name='monthlyStipend'
-                    value={internship?.monthlyStipend || ""}
-                    onChange={handleDataChange}
-                  />
-                </FloatingLabel>
-                <FloatingLabel controlId="floatingStartDate" label={
-                  <>
-                    <span>Internship Start Date <span style={{ color: 'red' }}>*</span></span>
-                  </>
-                }>
-                  <Form.Control
-                    type="date"
-                    placeholder="Internship Start Date"
-                    name='startDate'
-                    value={formatDate(internship?.startDate) || ""}
-                    onChange={handleDataChange}
-                  />
-                </FloatingLabel>
-                <FloatingLabel controlId="floatingEndDate" label="End Date">
-                  <Form.Control
-                    type="date"
-                    placeholder="Internship End Date"
-                    name='endDate'
-                    value={formatDate(internship?.endDate) || ""}
-                    onChange={handleDataChange}
-                  />
-                </FloatingLabel>
-                <FloatingLabel controlId="floatingSelectType" label={
-                  <>
-                    <span>Select Internship Type <span style={{ color: 'red' }}>*</span></span>
-                  </>
-                }>
-                  <Form.Select
-                    aria-label="Floating label select internship type"
-                    className='cursor-pointer'
-                    name='type'
-                    value={internship?.type || "undefined"}
-                    onChange={handleDataChange}
-                  >
-                    <option disabled value="undefined" className='text-gray-400'>Select Internship Type</option>
-                    <option value="Full Time">Full Time</option>
-                    <option value="Part Time">Part Time</option>
-                    <option value="On-Site">On-Site</option>
-                    <option value="Work From Home">Work From Home</option>
-                    <option value="Other">Other</option>
-                  </Form.Select>
-                </FloatingLabel>
-                <FloatingLabel controlId="floatingCompanyAddress" label="Company Address">
-                  <Form.Control
-                    as="textarea"
-                    placeholder="Company Address"
-                    name='companyAddress'
-                    style={{ maxHeight: "200px" }}
-                    value={internship?.companyAddress || ""}
-                    onChange={handleDataChange}
-                  />
-                </FloatingLabel>
-                <div className="col-span-2 max-sm:col-span-1">
-                  <FloatingLabel controlId="floatingDescription" label="Internship Description">
-                    <Form.Control
-                      as="textarea"
-                      placeholder="Internship Description"
-                      name='description'
-                      style={{ maxHeight: "350px", minHeight: "150px" }}
-                      value={internship?.description || ""}
+          <h2 className="text-3xl font-extrabold tracking-tight">
+            {internshipId ? 'Update Internship Record' : 'Add New Internship Record'}
+          </h2>
+          <p className="text-slate-400 text-xs sm:text-sm max-w-xl">
+            Record details about your industrial training, company contacts, duration, and monthly stipend compensation.
+          </p>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Card 1: Company Information */}
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 sm:p-8 space-y-6 flex flex-col justify-between">
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200/80 flex items-center justify-center text-lg">
+                  <FaBuilding />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight">1. Company Information</h3>
+                  <p className="text-xs text-slate-500">Corporate identity and web details</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {/* Company Name */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">
+                    Company Name <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <FaBuilding className="absolute left-4 top-3.5 text-slate-400 text-sm" />
+                    <input
+                      type="text"
+                      placeholder="e.g. Tata Consultancy Services"
+                      name="companyName"
+                      required
+                      value={internship?.companyName || ""}
                       onChange={handleDataChange}
+                      className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all"
                     />
-                  </FloatingLabel>
+                  </div>
+                </div>
+
+                {/* Company Website */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">
+                    Company Website
+                  </label>
+                  <div className="relative">
+                    <FaGlobe className="absolute left-4 top-3.5 text-slate-400 text-sm" />
+                    <input
+                      type="text"
+                      placeholder="e.g. https://www.tcs.com"
+                      name="companyWebsite"
+                      value={internship?.companyWebsite || ""}
+                      onChange={handleDataChange}
+                      className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Company Address */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">
+                    Company Office Address
+                  </label>
+                  <div className="relative">
+                    <FaMapMarkerAlt className="absolute left-4 top-3.5 text-slate-400 text-sm" />
+                    <textarea
+                      rows="3"
+                      placeholder="Full office address / branch location..."
+                      name="companyAddress"
+                      value={internship?.companyAddress || ""}
+                      onChange={handleDataChange}
+                      className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="flex flex-col justify-center items-center gap-2">
-              <Button variant="primary" type='submit' size='lg' onClick={handleSubmit}>
-                Update
-              </Button>
+          </div>
+
+          {/* Card 2: Internship Details & Compensation */}
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 sm:p-8 space-y-6 flex flex-col justify-between">
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+                <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200/80 flex items-center justify-center text-lg">
+                  <FaBriefcase />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight">2. Internship Details</h3>
+                  <p className="text-xs text-slate-500">Mode, duration, and monthly stipend</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {/* Internship Type */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">
+                    Internship Mode <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    name="type"
+                    required
+                    value={internship?.type || "undefined"}
+                    onChange={handleDataChange}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all"
+                  >
+                    <option disabled value="undefined">Select Internship Mode</option>
+                    <option value="Full Time">Full Time</option>
+                    <option value="Part Time">Part Time</option>
+                    <option value="On-Site">On-Site</option>
+                    <option value="Work From Home">Work From Home (Remote)</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Duration in Days */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">
+                      Duration (Days) <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      step={1}
+                      placeholder="e.g. 90"
+                      name="internshipDuration"
+                      required
+                      value={internship?.internshipDuration || ""}
+                      onChange={handleDataChange}
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all"
+                    />
+                  </div>
+
+                  {/* Monthly Stipend */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">
+                      Monthly Stipend (₹)
+                    </label>
+                    <div className="relative">
+                      <FaMoneyBillWave className="absolute left-4 top-3.5 text-slate-400 text-sm" />
+                      <input
+                        type="number"
+                        step={500}
+                        placeholder="e.g. 15000"
+                        name="monthlyStipend"
+                        value={internship?.monthlyStipend || ""}
+                        onChange={handleDataChange}
+                        className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-extrabold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Timeline Dates */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">
+                      Start Date <span className="text-rose-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <FaCalendarAlt className="absolute left-4 top-3.5 text-slate-400 text-sm" />
+                      <input
+                        type="date"
+                        name="startDate"
+                        required
+                        value={formatDate(internship?.startDate) || ""}
+                        onChange={handleDataChange}
+                        className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">
+                      End Date
+                    </label>
+                    <div className="relative">
+                      <FaCalendarAlt className="absolute left-4 top-3.5 text-slate-400 text-sm" />
+                      <input
+                        type="date"
+                        name="endDate"
+                        value={formatDate(internship?.endDate) || ""}
+                        onChange={handleDataChange}
+                        className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </>
-        )
-      }
+          </div>
+        </div>
 
+        {/* Full-width Description Card */}
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 sm:p-8 space-y-4">
+          <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">
+            Internship Description & Key Projects
+          </label>
+          <textarea
+            rows="4"
+            placeholder="Describe your role, technologies used, responsibilities, and key project outcomes..."
+            name="description"
+            value={internship?.description || ""}
+            onChange={handleDataChange}
+            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all"
+          />
+        </div>
 
-      {/* ModalBox Component for Delete Confirmation */}
+        {/* Submit Action Button */}
+        <div className="flex justify-center items-center">
+          <button
+            type="submit"
+            disabled={saving}
+            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-700 text-white font-extrabold text-sm rounded-2xl shadow-xl shadow-amber-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer disabled:opacity-50"
+          >
+            {saving ? (
+              <div className="w-5 h-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+            ) : (
+              <FaSave className="text-base" />
+            )}
+            <span>{internshipId ? 'Save Internship Record' : 'Submit Internship Record'}</span>
+          </button>
+        </div>
+      </form>
+
       <ModalBox
         show={showModal}
         close={closeModal}
-        header={"Confirmation"}
-        body={`Do you add internship ${modalBody ? `of ${modalBody}` : ''}?`}
-        btn={"Update"}
+        header="Confirm Internship Submission"
+        body={`Are you sure you want to save the internship record for ${modalBody ? modalBody : 'this company'}?`}
+        btn="Confirm & Save"
         confirmAction={confirmSubmit}
       />
-    </>
-  )
+    </div>
+  );
 }
 
-export default AddInternship
+export default AddInternship;

@@ -4,6 +4,9 @@ import { BrowserRouter, Routes, Route, Outlet, useLocation, useNavigate } from "
 // import LandingPage from "./pages/LandingPage";
 const LandingPage = lazy(() => import('./pages/LandingPage.jsx'))
 
+// Unified Login Page
+const LoginPage = lazy(() => import("./pages/LoginPage.jsx"));
+
 // Student Pages 
 const Login = lazy(() => import("./pages/students/Login.jsx"));
 const HomeStudent = lazy(() => import('./pages/students/Home.jsx'));
@@ -126,13 +129,13 @@ function App() {
             <Route index element={<LandingPage />} />
             {/* Student Login */}
             <Route path="/student/login" element={<Login />} />
-            {/* TPO Login  */}
-            <Route path="/tpo/login" element={<LoginTPO />} />
-            {/* Management Login  */}
-            <Route path="/management/login" element={<LoginManagement />} />
-            {/* admin login */}
-            <Route path="/admin" element={<LoginSuperUser />} />
-            <Route path="/admin/login" element={<LoginSuperUser />} />
+            {/* Unified Login & Role Routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/student/login" element={<LoginPage initialRole="student" />} />
+            <Route path="/tpo/login" element={<LoginPage initialRole="cdc" />} />
+            <Route path="/management/login" element={<LoginPage initialRole="management" />} />
+            <Route path="/admin" element={<LoginPage initialRole="superuser" />} />
+            <Route path="/admin/login" element={<LoginPage initialRole="superuser" />} />
 
 
             {/* All student routes  */}
