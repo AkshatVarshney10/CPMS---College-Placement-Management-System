@@ -12,10 +12,10 @@ import {
 
 function LandAbout() {
   const stats = [
-    { value: '95%', label: 'Placement Rate', description: 'Students successfully placed' },
-    { value: '250+', label: 'Companies Visited', description: 'Top recruiters annually' },
-    { value: '18 LPA', label: 'Highest Package', description: 'Record placement offer' },
-    { value: '8.5 LPA', label: 'Average Package', description: 'Across all branches' },
+    { value: '95.27%', label: 'Placement Rate', description: 'Students successfully placed' },
+    { value: '70+', label: 'Companies Visited', description: 'Top recruiters annually' },
+    { value: '53.6 LPA', label: 'Highest Package', description: 'Record placement offer' },
+    { value: '13.34 LPA', label: 'Average Package', description: 'Across all branches' },
   ];
 
   const roles = [

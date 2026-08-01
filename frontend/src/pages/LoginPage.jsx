@@ -23,14 +23,24 @@ function LoginPage({ initialRole: propRole }) {
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  // Determine initial role from prop, query parameter, or default to 'student'
+  // Determine initial role from prop, query parameter, location state, or pathname
   const getInitialRole = () => {
     if (propRole) return propRole;
     const queryRole = searchParams.get('role');
     if (queryRole) {
-      if (queryRole === 'tpo') return 'cdc';
-      if (queryRole === 'admin') return 'superuser';
+      if (queryRole === 'tpo' || queryRole === 'cdc') return 'cdc';
+      if (queryRole === 'admin' || queryRole === 'superuser') return 'superuser';
+      if (queryRole === 'management') return 'management';
+      if (queryRole === 'student') return 'student';
       return queryRole;
+    }
+    if (location.state?.role) {
+      const stateRole = location.state.role;
+      if (stateRole === 'tpo' || stateRole === 'cdc') return 'cdc';
+      if (stateRole === 'admin' || stateRole === 'superuser') return 'superuser';
+      if (stateRole === 'management') return 'management';
+      if (stateRole === 'student') return 'student';
+      return stateRole;
     }
     if (location.pathname.includes('/student/')) return 'student';
     if (location.pathname.includes('/tpo/')) return 'cdc';
@@ -40,6 +50,14 @@ function LoginPage({ initialRole: propRole }) {
   };
 
   const [selectedRole, setSelectedRole] = useState(getInitialRole());
+
+  useEffect(() => {
+    const roleFromUrl = getInitialRole();
+    if (roleFromUrl) {
+      setSelectedRole(roleFromUrl);
+    }
+  }, [searchParams, location]);
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -60,8 +78,6 @@ function LoginPage({ initialRole: propRole }) {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          // Handle dashboard redirection
           if (location.pathname.includes('/student')) navigate('/student/dashboard');
           else if (location.pathname.includes('/tpo')) navigate('/tpo/dashboard');
           else if (location.pathname.includes('/management')) navigate('/management/dashboard');
@@ -164,14 +180,14 @@ function LoginPage({ initialRole: propRole }) {
   };
 
   const rolesConfig = [
-    { id: 'student', label: 'Student', icon: FaGraduationCap },
-    { id: 'cdc', label: 'CDC', icon: FaBriefcase },
-    { id: 'management', label: 'Management', icon: FaBuilding },
-    { id: 'superuser', label: 'Super Admin', icon: FaUserShield },
+    { id: 'student', label: 'Student', subtitle: 'Student Access', icon: FaGraduationCap },
+    { id: 'cdc', label: 'CDC', subtitle: 'Placement Cell', icon: FaBriefcase },
+    { id: 'management', label: 'Management', subtitle: 'Executive Access', icon: FaBuilding },
+    { id: 'superuser', label: 'Super Admin', subtitle: 'System Control', icon: FaUserShield },
   ];
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-[#8B3E00] via-[#A04400] to-[#5C2600] flex flex-col items-center justify-center p-4 relative font-sans text-stone-900">
+    <div className="min-h-screen w-full bg-gradient-to-br from-stone-50 via-amber-50/50 via-orange-50/40 to-amber-100/60 flex flex-col items-center justify-center p-4 sm:p-6 relative font-sans text-stone-900 overflow-hidden">
       {/* Toast popup */}
       {showToast && (
         <Toast
@@ -181,28 +197,33 @@ function LoginPage({ initialRole: propRole }) {
         />
       )}
 
+      {/* Soft decorative background glow spots & radial patterns */}
+      <div className="absolute top-10 left-10 w-96 h-96 bg-amber-300/25 blur-3xl rounded-full pointer-events-none" />
+      <div className="absolute bottom-10 right-10 w-96 h-96 bg-orange-300/20 blur-3xl rounded-full pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-amber-200/15 blur-[160px] rounded-full pointer-events-none" />
+
       {/* Back to Home Button */}
       <button
         type="button"
         onClick={() => navigate('/')}
-        className="absolute top-6 left-6 text-white/90 hover:text-white flex items-center gap-2 text-sm font-medium transition-colors cursor-pointer"
+        className="absolute top-6 left-6 text-stone-700 hover:text-stone-900 flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/80 hover:bg-white border border-stone-200/90 text-xs sm:text-sm font-semibold transition-all duration-200 hover:-translate-x-1 cursor-pointer shadow-sm hover:shadow-md z-20"
       >
-        <FaArrowLeft className="text-xs" />
+        <FaArrowLeft className="text-xs text-amber-700" />
         <span>Back to Home</span>
       </button>
 
-      {/* Main Login Card */}
-      <div className="w-full max-w-md bg-[#F9F6F0] rounded-3xl p-8 sm:p-10 shadow-2xl flex flex-col items-center my-8 border border-white/20">
+      {/* Main Login Card with high contrast and soft shadow */}
+      <div className="w-full max-w-lg bg-white/95 backdrop-blur-2xl rounded-3xl p-7 sm:p-10 shadow-2xl shadow-amber-950/10 flex flex-col items-center my-8 border border-stone-200/80 relative z-10">
         {/* Top Circular Badge */}
-        <div className="w-16 h-16 rounded-full bg-[#c2590e] flex items-center justify-center text-white text-2xl shadow-md mb-4">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-white text-2xl shadow-lg shadow-amber-600/30 mb-4">
           <FaGraduationCap />
         </div>
 
         {/* Header Titles */}
-        <h2 className="text-2xl sm:text-3xl font-bold text-[#2d1a0e] mb-1 text-center">
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-stone-900 mb-1 text-center tracking-tight">
           Please Log In
         </h2>
-        <p className="text-xs sm:text-sm text-[#7a6859] mb-6 text-center">
+        <p className="text-xs sm:text-sm text-stone-500 mb-6 text-center font-medium">
           IIIT Placement Management System
         </p>
 
@@ -210,8 +231,8 @@ function LoginPage({ initialRole: propRole }) {
         <form onSubmit={handleSubmit} className="w-full flex flex-col items-center">
           {/* Role Selector Section */}
           <div className="w-full mb-6">
-            <label className="block text-xs font-semibold text-[#5a483a] uppercase tracking-wider text-left mb-2">
-              Login As
+            <label className="block text-xs font-bold text-stone-700 text-left mb-2.5 uppercase tracking-wider">
+              Select Role
             </label>
             <div className="grid grid-cols-2 gap-3 w-full">
               {rolesConfig.map((role) => {
@@ -222,14 +243,31 @@ function LoginPage({ initialRole: propRole }) {
                     key={role.id}
                     type="button"
                     onClick={() => handleRoleSelect(role.id)}
-                    className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer border ${
+                    className={`relative group flex items-center gap-3 p-3.5 rounded-2xl text-left font-semibold transition-all duration-200 cursor-pointer border ${
                       isSelected
-                        ? 'bg-[#b8540c] text-white border-transparent shadow-sm'
-                        : 'bg-white text-[#4a3b2f] border-[#e0d6ca] hover:bg-[#f3ede4]'
+                        ? 'bg-gradient-to-r from-amber-600 via-amber-650 to-amber-700 text-white border-transparent shadow-lg shadow-amber-600/30 scale-[1.02]'
+                        : 'bg-white/90 text-stone-700 border-stone-200/90 hover:bg-white hover:border-amber-400/80 hover:shadow-md hover:-translate-y-0.5'
                     }`}
                   >
-                    <Icon className="text-sm" />
-                    <span>{role.label}</span>
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 transition-colors ${
+                        isSelected
+                          ? 'bg-white/20 text-white'
+                          : 'bg-amber-100/80 text-amber-700 group-hover:bg-amber-600 group-hover:text-white'
+                      }`}
+                    >
+                      <Icon />
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-xs sm:text-sm font-bold leading-snug truncate">{role.label}</span>
+                      <span
+                        className={`text-[10px] font-normal truncate ${
+                          isSelected ? 'text-amber-100' : 'text-stone-400 group-hover:text-stone-500'
+                        }`}
+                      >
+                        {role.subtitle}
+                      </span>
+                    </div>
                   </button>
                 );
               })}
@@ -238,73 +276,73 @@ function LoginPage({ initialRole: propRole }) {
 
           {/* Email Field */}
           <div className="w-full mb-4">
-            <label className="block text-xs font-semibold text-[#4a3b2f] text-left mb-1.5">
+            <label className="block text-xs font-bold text-stone-700 text-left mb-1.5 uppercase tracking-wider">
               Email Address
             </label>
             <div className="relative w-full">
-              <FaEnvelope className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9a8878] text-sm pointer-events-none" />
+              <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 text-sm pointer-events-none" />
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="Enter your email"
-                className={`w-full bg-white border ${
-                  errors.email ? 'border-red-500' : 'border-[#e0d6ca]'
-                } rounded-xl pl-10 pr-4 py-2.5 text-sm text-[#2d1a0e] placeholder-[#b0a090] focus:outline-none focus:border-[#b8540c] focus:ring-1 focus:ring-[#b8540c] transition-all`}
+                placeholder="Enter your email address"
+                className={`w-full bg-stone-50/60 border ${
+                  errors.email ? 'border-red-500' : 'border-stone-200'
+                } rounded-xl pl-11 pr-4 py-3 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all duration-200`}
               />
             </div>
             {errors.email && (
-              <p className="text-red-600 text-xs mt-1 text-left">{errors.email}</p>
+              <p className="text-red-600 text-xs mt-1 text-left font-medium">{errors.email}</p>
             )}
           </div>
 
           {/* Password Field */}
           <div className="w-full mb-4">
-            <label className="block text-xs font-semibold text-[#4a3b2f] text-left mb-1.5">
+            <label className="block text-xs font-bold text-stone-700 text-left mb-1.5 uppercase tracking-wider">
               Password
             </label>
             <div className="relative w-full">
-              <FaLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9a8878] text-sm pointer-events-none" />
+              <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 text-sm pointer-events-none" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Enter your password"
-                className={`w-full bg-white border ${
-                  errors.password ? 'border-red-500' : 'border-[#e0d6ca]'
-                } rounded-xl pl-10 pr-10 py-2.5 text-sm text-[#2d1a0e] placeholder-[#b0a090] focus:outline-none focus:border-[#b8540c] focus:ring-1 focus:ring-[#b8540c] transition-all`}
+                className={`w-full bg-stone-50/60 border ${
+                  errors.password ? 'border-red-500' : 'border-stone-200'
+                } rounded-xl pl-11 pr-11 py-3 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all duration-200`}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9a8878] hover:text-[#5a483a] text-sm cursor-pointer p-1"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 text-sm cursor-pointer p-1.5 rounded-lg hover:bg-stone-100 transition-colors"
                 aria-label="Toggle password visibility"
               >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
             </div>
             {errors.password && (
-              <p className="text-red-600 text-xs mt-1 text-left">{errors.password}</p>
+              <p className="text-red-600 text-xs mt-1 text-left font-medium">{errors.password}</p>
             )}
           </div>
 
           {/* Options Row: Remember Me & Forgot Password */}
-          <div className="flex items-center justify-between w-full text-xs text-[#5a483a] mb-6">
-            <label className="flex items-center gap-2 cursor-pointer select-none">
+          <div className="flex items-center justify-between w-full text-xs text-stone-600 mb-6 px-0.5">
+            <label className="flex items-center gap-2 cursor-pointer select-none font-medium">
               <input
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="rounded text-[#b8540c] focus:ring-[#b8540c] accent-[#b8540c] cursor-pointer"
+                className="w-4 h-4 rounded text-amber-600 focus:ring-amber-500 accent-amber-600 cursor-pointer"
               />
               <span>Remember me</span>
             </label>
             <button
               type="button"
               onClick={handleForgotPassword}
-              className="font-semibold text-[#b8540c] hover:underline cursor-pointer bg-transparent border-0 p-0"
+              className="font-bold text-amber-700 hover:text-amber-800 hover:underline cursor-pointer bg-transparent border-0 p-0"
             >
               Forgot Password?
             </button>
@@ -314,29 +352,29 @@ function LoginPage({ initialRole: propRole }) {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#b8540c] hover:bg-[#a0480a] text-white font-semibold py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-70"
+            className="w-full bg-gradient-to-r from-amber-600 via-amber-650 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-amber-600/25 hover:shadow-xl hover:shadow-amber-600/35 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            <span>{isLoading ? 'Logging in...' : 'Log In'}</span>
-            <FaArrowRight className="text-xs" />
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                <span>Logging in...</span>
+              </span>
+            ) : (
+              <>
+                <span>Log In</span>
+                <FaArrowRight className="text-xs sm:text-sm" />
+              </>
+            )}
           </button>
         </form>
 
         {/* Footer Text inside Card */}
-        <p className="text-[11px] text-[#9a8878] mt-6 text-center">
-          © College Placement Management System 2026 - 27
+        <p className="text-[11px] font-medium text-stone-400 mt-6 text-center">
+          © IIIT Placement Management System 2026
         </p>
-      </div>
-
-      {/* Bottom Separate Container for Signup */}
-      <div className="w-full max-w-md bg-[#F9F6F0] rounded-2xl p-4 text-center text-xs text-[#5a483a] shadow-md border border-white/20">
-        <span>New to the portal? </span>
-        <button
-          type="button"
-          onClick={() => navigate('/student/signup')}
-          className="font-bold text-[#b8540c] hover:underline cursor-pointer bg-transparent border-0 p-0 ml-1"
-        >
-          Create an account
-        </button>
       </div>
     </div>
   );
